@@ -8,6 +8,32 @@ enum TileStatus: Equatable {
     case absent
 }
 
+// MARK: - Game Record (persisted history)
+
+struct GameRecord: Codable, Identifiable {
+    let id: UUID
+    let pairIndex: Int
+    let word1: String
+    let word2: String
+    let guesses: [String]
+    let won: Bool
+    let date: Date
+    let guessCount: Int
+
+    init(pairIndex: Int, word1: String, word2: String, guesses: [String], won: Bool) {
+        self.id = UUID()
+        self.pairIndex = pairIndex
+        self.word1 = word1
+        self.word2 = word2
+        self.guesses = guesses
+        self.won = won
+        self.date = Date()
+        self.guessCount = guesses.count
+    }
+}
+
+// MARK: - Game Engine
+
 @Observable
 final class GameEngine {
     let maxGuesses = 7
@@ -43,31 +69,68 @@ final class GameEngine {
     var board2Solved: Bool { guesses.contains(targetWords.1) }
     var totalPairs: Int { WordList.totalPairs }
 
+    /// Game history — persisted as JSON in UserDefaults.
+    var history: [GameRecord] {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: "gameHistory"),
+                  let records = try? JSONDecoder().decode([GameRecord].self, from: data)
+            else { return [] }
+            return records
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                UserDefaults.standard.set(data, forKey: "gameHistory")
+            }
+        }
+    }
+
     init() {
         loadCurrentPair()
     }
 
     // MARK: - Game lifecycle
 
-    /// Load the pair at the current persisted index.
+    /// Load the pair at the current persisted index, restoring in-progress guesses if any.
     func loadCurrentPair() {
         let pair = WordList.pair(at: pairIndex)
         targetWords = pair
-        guesses = []
-        currentGuess = ""
         gameOver = false
         won = false
         message = nil
+
+        // Restore in-progress state if it matches the current pair
+        let savedPair = UserDefaults.standard.integer(forKey: "inProgressPairIndex")
+        if savedPair == pairIndex,
+           let savedGuesses = UserDefaults.standard.stringArray(forKey: "inProgressGuesses") {
+            guesses = savedGuesses
+            currentGuess = UserDefaults.standard.string(forKey: "inProgressCurrent") ?? ""
+
+            // Re-check if the game was actually over
+            let now1 = guesses.contains(targetWords.0)
+            let now2 = guesses.contains(targetWords.1)
+            if now1 && now2 {
+                won = true
+                gameOver = true
+            } else if guesses.count >= maxGuesses {
+                gameOver = true
+            }
+        } else {
+            guesses = []
+            currentGuess = ""
+            saveInProgressState()
+        }
     }
 
     /// Advance to the next pair and start a new game.
     func nextPair() {
         pairIndex += 1
+        clearInProgressState()
         loadCurrentPair()
     }
 
     /// Restart the current pair from scratch.
     func retryCurrent() {
+        clearInProgressState()
         loadCurrentPair()
     }
 
@@ -76,11 +139,13 @@ final class GameEngine {
     func addLetter(_ ch: Character) {
         guard !gameOver, currentGuess.count < wordLength else { return }
         currentGuess.append(ch)
+        saveInProgressState()
     }
 
     func removeLetter() {
         guard !gameOver, !currentGuess.isEmpty else { return }
         currentGuess.removeLast()
+        saveInProgressState()
     }
 
     func submitGuess() {
@@ -113,10 +178,12 @@ final class GameEngine {
             gameOver = true
             totalWins += 1
             totalPlayed += 1
+            recordGame()
             flash("Brilliant!")
         } else if guesses.count >= maxGuesses {
             gameOver = true
             totalPlayed += 1
+            recordGame()
             var parts: [String] = []
             if !now1 { parts.append(targetWords.0) }
             if !now2 { parts.append(targetWords.1) }
@@ -126,6 +193,8 @@ final class GameEngine {
         } else if now2 && !was2 {
             flash("Right board solved!")
         }
+
+        saveInProgressState()
     }
 
     // MARK: - Evaluation
@@ -165,6 +234,35 @@ final class GameEngine {
             }
         }
         return map
+    }
+
+    // MARK: - Persistence helpers
+
+    private func saveInProgressState() {
+        UserDefaults.standard.set(pairIndex, forKey: "inProgressPairIndex")
+        UserDefaults.standard.set(guesses, forKey: "inProgressGuesses")
+        UserDefaults.standard.set(currentGuess, forKey: "inProgressCurrent")
+    }
+
+    private func clearInProgressState() {
+        UserDefaults.standard.removeObject(forKey: "inProgressGuesses")
+        UserDefaults.standard.removeObject(forKey: "inProgressCurrent")
+    }
+
+    private func recordGame() {
+        let record = GameRecord(
+            pairIndex: pairIndex,
+            word1: targetWords.0,
+            word2: targetWords.1,
+            guesses: guesses,
+            won: won
+        )
+        var h = history
+        h.insert(record, at: 0) // newest first
+        // Keep last 200 games max
+        if h.count > 200 { h = Array(h.prefix(200)) }
+        history = h
+        clearInProgressState()
     }
 
     // MARK: - Helpers

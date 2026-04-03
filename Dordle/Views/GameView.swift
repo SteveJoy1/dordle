@@ -2,6 +2,8 @@ import SwiftUI
 
 struct GameView: View {
     @State private var engine = GameEngine()
+    @State private var showResetAlert = false
+    @State private var showHistory = false
 
     var body: some View {
         GeometryReader { geo in
@@ -125,6 +127,17 @@ struct GameView: View {
                 .padding(.bottom, 6)
             }
         }
+        .alert("Reset this game?", isPresented: $showResetAlert) {
+            Button("Reset", role: .destructive) {
+                withAnimation { engine.retryCurrent() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("All guesses for this pair will be cleared.")
+        }
+        .sheet(isPresented: $showHistory) {
+            HistoryView(engine: engine)
+        }
     }
 
     // MARK: - Header
@@ -152,8 +165,19 @@ struct GameView: View {
                     .monospacedDigit()
             }
 
+            // History button
+            Button { showHistory = true } label: {
+                Image(systemName: "chart.bar")
+                    .font(.body)
+            }
+
+            // Reset button (with confirmation when there are guesses)
             Button {
-                withAnimation { engine.retryCurrent() }
+                if engine.guesses.isEmpty {
+                    withAnimation { engine.retryCurrent() }
+                } else {
+                    showResetAlert = true
+                }
             } label: {
                 Image(systemName: "arrow.counterclockwise")
                     .font(.body)
