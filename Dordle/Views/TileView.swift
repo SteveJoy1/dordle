@@ -11,10 +11,10 @@ struct TileView: View {
 
     private func startFlip() {
         flipAngle = 0
-        withAnimation(.easeIn(duration: 0.1).delay(revealDelay)) {
+        withAnimation(.easeIn(duration: 0.2).delay(revealDelay)) {
             flipAngle = 90
         }
-        withAnimation(.easeOut(duration: 0.1).delay(revealDelay + 0.1)) {
+        withAnimation(.easeOut(duration: 0.2).delay(revealDelay + 0.2)) {
             flipAngle = 180
         }
     }

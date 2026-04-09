@@ -15,7 +15,7 @@ struct BoardView: View {
     @State private var revealedRows: Set<Int> = []
     @State private var revealingRow: Int? = nil
 
-    private let flipDuration = 0.2 // total per tile
+    private let flipDuration = 0.4 // total per tile
 
     var body: some View {
         VStack(spacing: 3) {
@@ -71,9 +71,17 @@ struct BoardView: View {
         )
     }
 
+    /// Number of guess rows this board should display (freezes at solve row).
+    private var displayedGuessCount: Int {
+        if isSolved, let idx = guesses.firstIndex(of: targetWord) {
+            return idx + 1
+        }
+        return guesses.count
+    }
+
     @ViewBuilder
     private func tile(row: Int, col: Int) -> some View {
-        if row < guesses.count {
+        if row < displayedGuessCount {
             let guess = guesses[row]
             let chars = Array(guess)
             let eval = GameEngine.evaluate(guess: guess, target: targetWord)
@@ -81,10 +89,8 @@ struct BoardView: View {
             let isActiveReveal = revealingRow == row
 
             if isRevealed {
-                // Already revealed — show final colors, no animation
                 TileView(letter: chars[col], status: eval[col])
             } else if isActiveReveal, let delays = revealDelays {
-                // Currently flipping
                 TileView(
                     letter: chars[col],
                     status: eval[col],
@@ -92,10 +98,9 @@ struct BoardView: View {
                     revealDelay: delays[col]
                 )
             } else {
-                // Pending reveal — show letter but no color yet
                 TileView(letter: chars[col], status: .typed)
             }
-        } else if row == guesses.count && !isGameOver {
+        } else if !isSolved && row == guesses.count && !isGameOver {
             let chars = Array(currentGuess)
             let letter: Character? = col < chars.count ? chars[col] : nil
             TileView(

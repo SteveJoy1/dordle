@@ -6,7 +6,7 @@ struct WordleGameView: View {
     @State private var showHistory = false
     @State private var revealDelays: [Double]? = nil
 
-    private let flipDuration = 0.2
+    private let flipDuration = 0.4
 
     var body: some View {
         GeometryReader { geo in

@@ -7,7 +7,7 @@ struct GameView: View {
     @State private var board1Delays: [Double]? = nil
     @State private var board2Delays: [Double]? = nil
 
-    private let flipDuration = 0.2
+    private let flipDuration = 0.4
 
     var body: some View {
         GeometryReader { geo in
