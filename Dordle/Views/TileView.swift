@@ -9,6 +9,16 @@ struct TileView: View {
 
     @State private var flipAngle: Double = 0
 
+    private func startFlip() {
+        flipAngle = 0
+        withAnimation(.easeIn(duration: 0.1).delay(revealDelay)) {
+            flipAngle = 90
+        }
+        withAnimation(.easeOut(duration: 0.1).delay(revealDelay + 0.1)) {
+            flipAngle = 180
+        }
+    }
+
     private var showColored: Bool {
         if isRevealing { return flipAngle >= 90 }
         switch status {
@@ -66,15 +76,14 @@ struct TileView: View {
             .degrees(isRevealing ? flipAngle : 0),
             axis: (x: 1, y: 0, z: 0)
         )
+        .onAppear {
+            if isRevealing {
+                startFlip()
+            }
+        }
         .onChange(of: isRevealing) { _, revealing in
             if revealing {
-                flipAngle = 0
-                withAnimation(.easeIn(duration: 0.1).delay(revealDelay)) {
-                    flipAngle = 90
-                }
-                withAnimation(.easeOut(duration: 0.1).delay(revealDelay + 0.1)) {
-                    flipAngle = 180
-                }
+                startFlip()
             } else {
                 flipAngle = 0
             }
