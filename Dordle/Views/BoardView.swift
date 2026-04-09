@@ -35,8 +35,8 @@ struct BoardView: View {
                 // A new guess was just submitted — animate the new row
                 let newRow = new - 1
                 revealingRow = newRow
-                // After the staggered flip finishes (~0.1s * 4 cols + 0.5s flip)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                // After the staggered flip finishes (~0.15s * 4 cols + 0.7s flip)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
                     revealedRows.insert(newRow)
                     revealingRow = nil
                 }
@@ -77,7 +77,7 @@ struct BoardView: View {
                 letter: chars[col],
                 status: eval[col],
                 isRevealing: isActiveReveal,
-                revealDelay: isActiveReveal ? Double(col) * 0.1 : 0
+                revealDelay: isActiveReveal ? Double(col) * 0.15 : 0
             )
         } else if row == guesses.count && !isGameOver {
             let chars = Array(currentGuess)

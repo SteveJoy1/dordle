@@ -44,7 +44,7 @@ struct WordleGameView: View {
                     shakeCurrentRow: engine.shakeRow,
                     label: ""
                 )
-                .frame(maxWidth: 320)
+                .frame(maxWidth: 260)
                 .padding(.horizontal, 24)
 
                 Spacer(minLength: 4)

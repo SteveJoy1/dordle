@@ -76,10 +76,10 @@ struct TileView: View {
         .onChange(of: isRevealing) { _, revealing in
             if revealing {
                 flipAngle = 0
-                withAnimation(.easeIn(duration: 0.25).delay(revealDelay)) {
+                withAnimation(.easeIn(duration: 0.35).delay(revealDelay)) {
                     flipAngle = 90
                 }
-                withAnimation(.easeOut(duration: 0.25).delay(revealDelay + 0.25)) {
+                withAnimation(.easeOut(duration: 0.35).delay(revealDelay + 0.35)) {
                     flipAngle = 180
                 }
             } else {
