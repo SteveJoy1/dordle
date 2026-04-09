@@ -4,6 +4,9 @@ struct WordleGameView: View {
     @State private var engine = WordleGameEngine()
     @State private var showResetAlert = false
     @State private var showHistory = false
+    @State private var revealDelays: [Double]? = nil
+
+    private let flipDuration = 0.2
 
     var body: some View {
         GeometryReader { geo in
@@ -42,7 +45,9 @@ struct WordleGameView: View {
                     isSolved: engine.won,
                     isGameOver: engine.gameOver,
                     shakeCurrentRow: engine.shakeRow,
-                    label: ""
+                    label: "",
+                    revealDelays: revealDelays,
+                    currentGuessInvalid: engine.currentGuessInvalid
                 )
                 .frame(maxWidth: 260)
                 .padding(.horizontal, 24)
@@ -113,6 +118,23 @@ struct WordleGameView: View {
                 )
                 .padding(.horizontal, 4)
                 .padding(.bottom, 6)
+            }
+        }
+        .onChange(of: engine.guesses.count) { old, new in
+            if new > old {
+                var order = Array(0..<5)
+                order.shuffle()
+                var delays = [Double](repeating: 0, count: 5)
+                for (position, tile) in order.enumerated() {
+                    delays[tile] = Double(position) * flipDuration
+                }
+                revealDelays = delays
+                let total = Double(4) * flipDuration + flipDuration + 0.1
+                DispatchQueue.main.asyncAfter(deadline: .now() + total) {
+                    revealDelays = nil
+                }
+            } else if new < old {
+                revealDelays = nil
             }
         }
         .alert("Reset this game?", isPresented: $showResetAlert) {

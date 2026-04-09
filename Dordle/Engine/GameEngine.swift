@@ -65,6 +65,10 @@ final class GameEngine {
         set { UserDefaults.standard.set(newValue, forKey: "totalPlayed") }
     }
 
+    var currentGuessInvalid: Bool {
+        currentGuess.count == wordLength && !WordList.isValid(currentGuess.uppercased())
+    }
+
     var board1Solved: Bool { guesses.contains(targetWords.0) }
     var board2Solved: Bool { guesses.contains(targetWords.1) }
     var totalPairs: Int { WordList.totalPairs }

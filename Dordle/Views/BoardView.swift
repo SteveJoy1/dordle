@@ -9,9 +9,13 @@ struct BoardView: View {
     let isGameOver: Bool
     let shakeCurrentRow: Bool
     let label: String
+    var revealDelays: [Double]? = nil
+    var currentGuessInvalid: Bool = false
 
     @State private var revealedRows: Set<Int> = []
     @State private var revealingRow: Int? = nil
+
+    private let flipDuration = 0.2 // total per tile
 
     var body: some View {
         VStack(spacing: 3) {
@@ -27,21 +31,22 @@ struct BoardView: View {
             }
         }
         .onAppear {
-            // Seed already-submitted rows as revealed (no animation on restore)
             revealedRows = Set(0..<guesses.count)
         }
-        .onChange(of: guesses.count) { old, new in
-            if new > old {
-                // A new guess was just submitted — animate the new row
-                let newRow = new - 1
+        .onChange(of: revealDelays) { _, newDelays in
+            if let delays = newDelays, guesses.count > 0 {
+                let newRow = guesses.count - 1
+                guard !revealedRows.contains(newRow) else { return }
                 revealingRow = newRow
-                // After the staggered flip finishes (~0.15s * 4 cols + 0.7s flip)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                let maxDelay = delays.max() ?? 0
+                DispatchQueue.main.asyncAfter(deadline: .now() + maxDelay + flipDuration + 0.05) {
                     revealedRows.insert(newRow)
                     revealingRow = nil
                 }
-            } else if new < old {
-                // Game was reset
+            }
+        }
+        .onChange(of: guesses.count) { old, new in
+            if new < old {
                 revealedRows.removeAll()
                 revealingRow = nil
             }
@@ -72,17 +77,32 @@ struct BoardView: View {
             let guess = guesses[row]
             let chars = Array(guess)
             let eval = GameEngine.evaluate(guess: guess, target: targetWord)
-            let isActiveReveal = revealingRow == row && !revealedRows.contains(row)
-            TileView(
-                letter: chars[col],
-                status: eval[col],
-                isRevealing: isActiveReveal,
-                revealDelay: isActiveReveal ? Double(col) * 0.15 : 0
-            )
+            let isRevealed = revealedRows.contains(row)
+            let isActiveReveal = revealingRow == row
+
+            if isRevealed {
+                // Already revealed — show final colors, no animation
+                TileView(letter: chars[col], status: eval[col])
+            } else if isActiveReveal, let delays = revealDelays {
+                // Currently flipping
+                TileView(
+                    letter: chars[col],
+                    status: eval[col],
+                    isRevealing: true,
+                    revealDelay: delays[col]
+                )
+            } else {
+                // Pending reveal — show letter but no color yet
+                TileView(letter: chars[col], status: .typed)
+            }
         } else if row == guesses.count && !isGameOver {
             let chars = Array(currentGuess)
             let letter: Character? = col < chars.count ? chars[col] : nil
-            TileView(letter: letter, status: letter != nil ? .typed : .empty)
+            TileView(
+                letter: letter,
+                status: letter != nil ? .typed : .empty,
+                isInvalid: currentGuessInvalid && currentGuess.count == 5
+            )
         } else {
             TileView(letter: nil, status: .empty)
         }

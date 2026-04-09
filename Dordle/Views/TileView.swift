@@ -5,22 +5,17 @@ struct TileView: View {
     let status: TileStatus
     var isRevealing: Bool = false
     var revealDelay: Double = 0
+    var isInvalid: Bool = false
 
     @State private var flipAngle: Double = 0
 
-    /// Whether to display the colored (revealed) face of the tile.
-    /// True when: the flip has passed 90 degrees, OR the tile is a
-    /// non-animating submitted tile (correct/present/absent without reveal).
     private var showColored: Bool {
         if isRevealing { return flipAngle >= 90 }
-        // Static submitted tile — show colors immediately
         switch status {
         case .correct, .present, .absent: return true
         default: return false
         }
     }
-
-    // MARK: - Colors
 
     private func fill(for s: TileStatus) -> Color {
         switch s {
@@ -40,25 +35,23 @@ struct TileView: View {
     }
 
     private var foreground: Color {
-        showColored ? .white : Color(.label)
+        if showColored { return .white }
+        if isInvalid { return .red }
+        return Color(.label)
     }
-
-    // MARK: - Body
 
     var body: some View {
         ZStack {
             if showColored {
-                // Colored face
                 RoundedRectangle(cornerRadius: 3)
                     .fill(fill(for: status))
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(fill(for: status), lineWidth: 2)
             } else {
-                // Uncolored face
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.clear)
                 RoundedRectangle(cornerRadius: 3)
-                    .stroke(isRevealing ? Color(.systemGray2) : border, lineWidth: 2)
+                    .stroke(isInvalid ? .red : (isRevealing ? Color(.systemGray2) : border), lineWidth: 2)
             }
 
             if let letter {
@@ -76,10 +69,10 @@ struct TileView: View {
         .onChange(of: isRevealing) { _, revealing in
             if revealing {
                 flipAngle = 0
-                withAnimation(.easeIn(duration: 0.35).delay(revealDelay)) {
+                withAnimation(.easeIn(duration: 0.1).delay(revealDelay)) {
                     flipAngle = 90
                 }
-                withAnimation(.easeOut(duration: 0.35).delay(revealDelay + 0.35)) {
+                withAnimation(.easeOut(duration: 0.1).delay(revealDelay + 0.1)) {
                     flipAngle = 180
                 }
             } else {

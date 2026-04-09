@@ -4,6 +4,10 @@ struct GameView: View {
     @State private var engine = GameEngine()
     @State private var showResetAlert = false
     @State private var showHistory = false
+    @State private var board1Delays: [Double]? = nil
+    @State private var board2Delays: [Double]? = nil
+
+    private let flipDuration = 0.2
 
     var body: some View {
         GeometryReader { geo in
@@ -45,7 +49,9 @@ struct GameView: View {
                         isSolved: engine.board1Solved,
                         isGameOver: engine.gameOver,
                         shakeCurrentRow: engine.shakeRow,
-                        label: "1"
+                        label: "1",
+                        revealDelays: board1Delays,
+                        currentGuessInvalid: engine.currentGuessInvalid
                     )
                     BoardView(
                         targetWord: engine.targetWords.1,
@@ -55,7 +61,9 @@ struct GameView: View {
                         isSolved: engine.board2Solved,
                         isGameOver: engine.gameOver,
                         shakeCurrentRow: engine.shakeRow,
-                        label: "2"
+                        label: "2",
+                        revealDelays: board2Delays,
+                        currentGuessInvalid: engine.currentGuessInvalid
                     )
                 }
                 .padding(.horizontal, 8)
@@ -126,6 +134,33 @@ struct GameView: View {
                 )
                 .padding(.horizontal, 4)
                 .padding(.bottom, 6)
+            }
+        }
+        .onChange(of: engine.guesses.count) { old, new in
+            if new > old {
+                // 10 tiles across both boards, random sequential order
+                var order = Array(0..<10)
+                order.shuffle()
+                var d1 = [Double](repeating: 0, count: 5)
+                var d2 = [Double](repeating: 0, count: 5)
+                for (position, tile) in order.enumerated() {
+                    let delay = Double(position) * flipDuration
+                    if tile < 5 {
+                        d1[tile] = delay
+                    } else {
+                        d2[tile - 5] = delay
+                    }
+                }
+                board1Delays = d1
+                board2Delays = d2
+                let total = Double(9) * flipDuration + flipDuration + 0.1
+                DispatchQueue.main.asyncAfter(deadline: .now() + total) {
+                    board1Delays = nil
+                    board2Delays = nil
+                }
+            } else if new < old {
+                board1Delays = nil
+                board2Delays = nil
             }
         }
         .alert("Reset this game?", isPresented: $showResetAlert) {

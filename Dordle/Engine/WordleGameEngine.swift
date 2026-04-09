@@ -55,6 +55,10 @@ final class WordleGameEngine {
         set { UserDefaults.standard.set(newValue, forKey: "wordle_totalPlayed") }
     }
 
+    var currentGuessInvalid: Bool {
+        currentGuess.count == wordLength && !WordList.isValid(currentGuess.uppercased())
+    }
+
     var solved: Bool { guesses.contains(targetWord) }
     var totalWords: Int { WordList.totalWords }
 
