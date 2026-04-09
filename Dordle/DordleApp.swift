@@ -4,8 +4,17 @@ import SwiftUI
 struct DordleApp: App {
     var body: some Scene {
         WindowGroup {
-            GameView()
-                .preferredColorScheme(nil)
+            TabView {
+                GameView()
+                    .tabItem {
+                        Label("Dordle", systemImage: "rectangle.split.2x1")
+                    }
+                WordleGameView()
+                    .tabItem {
+                        Label("Wordle", systemImage: "square")
+                    }
+            }
+            .preferredColorScheme(nil)
         }
     }
 }

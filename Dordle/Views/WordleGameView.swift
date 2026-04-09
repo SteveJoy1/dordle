@@ -1,14 +1,12 @@
 import SwiftUI
 
-struct GameView: View {
-    @State private var engine = GameEngine()
+struct WordleGameView: View {
+    @State private var engine = WordleGameEngine()
     @State private var showResetAlert = false
     @State private var showHistory = false
 
     var body: some View {
         GeometryReader { geo in
-            let compact = geo.size.width < 420
-
             VStack(spacing: 0) {
                 // Header
                 header
@@ -35,30 +33,19 @@ struct GameView: View {
 
                 Spacer(minLength: 2)
 
-                // Two boards
-                HStack(alignment: .top, spacing: compact ? 6 : 12) {
-                    BoardView(
-                        targetWord: engine.targetWords.0,
-                        guesses: engine.guesses,
-                        currentGuess: engine.currentGuess,
-                        maxGuesses: engine.maxGuesses,
-                        isSolved: engine.board1Solved,
-                        isGameOver: engine.gameOver,
-                        shakeCurrentRow: engine.shakeRow,
-                        label: "1"
-                    )
-                    BoardView(
-                        targetWord: engine.targetWords.1,
-                        guesses: engine.guesses,
-                        currentGuess: engine.currentGuess,
-                        maxGuesses: engine.maxGuesses,
-                        isSolved: engine.board2Solved,
-                        isGameOver: engine.gameOver,
-                        shakeCurrentRow: engine.shakeRow,
-                        label: "2"
-                    )
-                }
-                .padding(.horizontal, 8)
+                // Single board, centered, max 320pt wide
+                BoardView(
+                    targetWord: engine.targetWord,
+                    guesses: engine.guesses,
+                    currentGuess: engine.currentGuess,
+                    maxGuesses: engine.maxGuesses,
+                    isSolved: engine.won,
+                    isGameOver: engine.gameOver,
+                    shakeCurrentRow: engine.shakeRow,
+                    label: ""
+                )
+                .frame(maxWidth: 320)
+                .padding(.horizontal, 24)
 
                 Spacer(minLength: 4)
 
@@ -97,9 +84,9 @@ struct GameView: View {
                             }
 
                             Button {
-                                withAnimation { engine.nextPair() }
+                                withAnimation { engine.nextWord() }
                             } label: {
-                                Label("Next Pair", systemImage: "arrow.right")
+                                Label("New Word", systemImage: "arrow.right")
                                     .font(.subheadline.bold())
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 20)
@@ -117,11 +104,11 @@ struct GameView: View {
 
                 Spacer(minLength: 4)
 
-                // Keyboard
+                // Keyboard — single-board mode
                 KeyboardView(
-                    states1: engine.keyboardStates(for: 0),
-                    states2: engine.keyboardStates(for: 1),
-                    splitRatio: keyboardSplitRatio,
+                    states1: engine.keyboardStates(),
+                    states2: [:],
+                    splitRatio: 1.0,
                     onKey: handleKey
                 )
                 .padding(.horizontal, 4)
@@ -134,10 +121,10 @@ struct GameView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("All guesses for this pair will be cleared.")
+            Text("All guesses for this word will be cleared.")
         }
         .sheet(isPresented: $showHistory) {
-            HistoryView(engine: engine)
+            WordleHistoryView(engine: engine)
         }
     }
 
@@ -145,14 +132,14 @@ struct GameView: View {
 
     private var header: some View {
         HStack {
-            Text("DORDLE")
+            Text("WORDLE")
                 .font(.title2.bold())
                 .kerning(3)
 
             Spacer()
 
-            // Pair progress
-            Text("Pair \(engine.pairIndex + 1)/\(engine.totalPairs)")
+            // Word progress
+            Text("Word \(engine.wordIndex + 1)/\(engine.totalWords)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -188,12 +175,6 @@ struct GameView: View {
 
     // MARK: - Helpers
 
-    private var keyboardSplitRatio: CGFloat {
-        if engine.board1Solved && !engine.board2Solved { return 0.25 }
-        if engine.board2Solved && !engine.board1Solved { return 0.75 }
-        return 0.5
-    }
-
     private func stat(label: String, value: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
@@ -218,5 +199,5 @@ struct GameView: View {
 }
 
 #Preview {
-    GameView()
+    WordleGameView()
 }

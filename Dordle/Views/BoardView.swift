@@ -10,6 +10,9 @@ struct BoardView: View {
     let shakeCurrentRow: Bool
     let label: String
 
+    @State private var revealedRows: Set<Int> = []
+    @State private var revealingRow: Int? = nil
+
     var body: some View {
         VStack(spacing: 3) {
             ForEach(0..<maxGuesses, id: \.self) { row in
@@ -21,6 +24,26 @@ struct BoardView: View {
                     .font(.caption2.bold())
                     .foregroundStyle(.green)
                     .padding(.top, 2)
+            }
+        }
+        .onAppear {
+            // Seed already-submitted rows as revealed (no animation on restore)
+            revealedRows = Set(0..<guesses.count)
+        }
+        .onChange(of: guesses.count) { old, new in
+            if new > old {
+                // A new guess was just submitted — animate the new row
+                let newRow = new - 1
+                revealingRow = newRow
+                // After the staggered flip finishes (~0.1s * 4 cols + 0.5s flip)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                    revealedRows.insert(newRow)
+                    revealingRow = nil
+                }
+            } else if new < old {
+                // Game was reset
+                revealedRows.removeAll()
+                revealingRow = nil
             }
         }
     }
@@ -49,7 +72,13 @@ struct BoardView: View {
             let guess = guesses[row]
             let chars = Array(guess)
             let eval = GameEngine.evaluate(guess: guess, target: targetWord)
-            TileView(letter: chars[col], status: eval[col])
+            let isActiveReveal = revealingRow == row && !revealedRows.contains(row)
+            TileView(
+                letter: chars[col],
+                status: eval[col],
+                isRevealing: isActiveReveal,
+                revealDelay: isActiveReveal ? Double(col) * 0.1 : 0
+            )
         } else if row == guesses.count && !isGameOver {
             let chars = Array(currentGuess)
             let letter: Character? = col < chars.count ? chars[col] : nil

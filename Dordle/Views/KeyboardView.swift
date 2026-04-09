@@ -3,6 +3,7 @@ import SwiftUI
 struct KeyboardView: View {
     let states1: [Character: TileStatus]
     let states2: [Character: TileStatus]
+    var splitRatio: CGFloat = 0.5
     let onKey: (String) -> Void
 
     private let rows: [[String]] = [
@@ -23,6 +24,7 @@ struct KeyboardView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: splitRatio)
     }
 
     @ViewBuilder
@@ -36,9 +38,12 @@ struct KeyboardView: View {
         Button { onKey(key) } label: {
             ZStack {
                 if hasColor {
-                    HStack(spacing: 0) {
-                        Rectangle().fill(colorFor(s1))
-                        Rectangle().fill(colorFor(s2))
+                    GeometryReader { geo in
+                        HStack(spacing: 0) {
+                            Rectangle().fill(colorFor(s1))
+                                .frame(width: geo.size.width * splitRatio)
+                            Rectangle().fill(colorFor(s2))
+                        }
                     }
                 } else {
                     RoundedRectangle(cornerRadius: 6)

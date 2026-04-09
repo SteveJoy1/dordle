@@ -1326,6 +1326,14 @@ enum WordList {
         pairs[index % pairs.count]
     }
 
+    // MARK: - Single-word access (Wordle mode)
+
+    static var totalWords: Int { answers.count }
+
+    static func word(at index: Int) -> String {
+        answers[index % answers.count].uppercased()
+    }
+
     // MARK: - Lookup
 
     private static let validSet: Set<String> = {
