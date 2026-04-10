@@ -138,12 +138,22 @@ struct GameView: View {
         }
         .onChange(of: engine.guesses.count) { old, new in
             if new > old {
-                // 10 tiles across both boards, random sequential order
-                var order = Array(0..<10)
-                order.shuffle()
+                let lastIdx = new - 1
+                // A board was "already solved" if it solved on a prior row
+                let b1WasSolved = engine.board1Solved &&
+                    engine.guesses.firstIndex(of: engine.targetWords.0) != lastIdx
+                let b2WasSolved = engine.board2Solved &&
+                    engine.guesses.firstIndex(of: engine.targetWords.1) != lastIdx
+
+                // Only include tiles from boards that still need revealing
+                var pool = [Int]()
+                if !b1WasSolved { pool.append(contentsOf: 0..<5) }
+                if !b2WasSolved { pool.append(contentsOf: 5..<10) }
+                pool.shuffle()
+
                 var d1 = [Double](repeating: 0, count: 5)
                 var d2 = [Double](repeating: 0, count: 5)
-                for (position, tile) in order.enumerated() {
+                for (position, tile) in pool.enumerated() {
                     let delay = Double(position) * flipDuration
                     if tile < 5 {
                         d1[tile] = delay
@@ -151,9 +161,9 @@ struct GameView: View {
                         d2[tile - 5] = delay
                     }
                 }
-                board1Delays = d1
-                board2Delays = d2
-                let total = Double(9) * flipDuration + flipDuration + 0.1
+                board1Delays = b1WasSolved ? nil : d1
+                board2Delays = b2WasSolved ? nil : d2
+                let total = Double(max(pool.count - 1, 0)) * flipDuration + flipDuration + 0.1
                 DispatchQueue.main.asyncAfter(deadline: .now() + total) {
                     board1Delays = nil
                     board2Delays = nil
