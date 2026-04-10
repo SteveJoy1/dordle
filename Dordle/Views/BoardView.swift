@@ -23,7 +23,7 @@ struct BoardView: View {
                 rowView(row)
             }
 
-            if isSolved {
+            if isSolved && revealingRow == nil {
                 Text("Solved!")
                     .font(.caption2.bold())
                     .foregroundStyle(.green)
