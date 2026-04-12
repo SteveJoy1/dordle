@@ -5,6 +5,8 @@ struct WordleGameView: View {
     @State private var showResetAlert = false
     @State private var showHistory = false
     @State private var revealDelays: [Double]? = nil
+    @State private var animating = false
+    @State private var pendingMessage: String? = nil
 
     private let flipDuration = 0.4
 
@@ -18,9 +20,9 @@ struct WordleGameView: View {
 
                 Divider()
 
-                // Toast
+                // Toast — deferred until flip animations complete
                 ZStack {
-                    if let msg = engine.message {
+                    if let msg = animating ? nil : (pendingMessage ?? engine.message) {
                         Text(msg)
                             .font(.subheadline.bold())
                             .foregroundStyle(.white)
@@ -32,7 +34,7 @@ struct WordleGameView: View {
                     }
                 }
                 .frame(height: 36)
-                .animation(.easeInOut(duration: 0.25), value: engine.message != nil)
+                .animation(.easeInOut(duration: 0.25), value: animating ? nil : (pendingMessage ?? engine.message))
 
                 Spacer(minLength: 2)
 
@@ -54,8 +56,8 @@ struct WordleGameView: View {
 
                 Spacer(minLength: 4)
 
-                // Game-over actions
-                if engine.gameOver {
+                // Game-over actions — wait for flip animations
+                if engine.gameOver && !animating {
                     VStack(spacing: 10) {
                         // Stats pill
                         HStack(spacing: 16) {
@@ -129,9 +131,17 @@ struct WordleGameView: View {
                     delays[tile] = Double(position) * flipDuration
                 }
                 revealDelays = delays
+                animating = true
+                pendingMessage = engine.message
                 let total = Double(4) * flipDuration + flipDuration + 0.1
                 DispatchQueue.main.asyncAfter(deadline: .now() + total) {
                     revealDelays = nil
+                    animating = false
+                    if pendingMessage != nil {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            pendingMessage = nil
+                        }
+                    }
                 }
             } else if new < old {
                 revealDelays = nil
@@ -166,7 +176,7 @@ struct WordleGameView: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
 
-            if !engine.gameOver {
+            if !engine.gameOver || animating {
                 Text("·")
                     .foregroundStyle(.secondary)
                 Text("\(engine.guesses.count)/\(engine.maxGuesses)")

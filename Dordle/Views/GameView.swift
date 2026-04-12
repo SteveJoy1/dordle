@@ -6,6 +6,8 @@ struct GameView: View {
     @State private var showHistory = false
     @State private var board1Delays: [Double]? = nil
     @State private var board2Delays: [Double]? = nil
+    @State private var animating = false
+    @State private var pendingMessage: String? = nil
 
     private let flipDuration = 0.4
 
@@ -21,9 +23,9 @@ struct GameView: View {
 
                 Divider()
 
-                // Toast
+                // Toast — deferred until flip animations complete
                 ZStack {
-                    if let msg = engine.message {
+                    if let msg = animating ? nil : (pendingMessage ?? engine.message) {
                         Text(msg)
                             .font(.subheadline.bold())
                             .foregroundStyle(.white)
@@ -35,7 +37,7 @@ struct GameView: View {
                     }
                 }
                 .frame(height: 36)
-                .animation(.easeInOut(duration: 0.25), value: engine.message != nil)
+                .animation(.easeInOut(duration: 0.25), value: animating ? nil : (pendingMessage ?? engine.message))
 
                 Spacer(minLength: 2)
 
@@ -70,8 +72,8 @@ struct GameView: View {
 
                 Spacer(minLength: 4)
 
-                // Game-over actions
-                if engine.gameOver {
+                // Game-over actions — wait for flip animations
+                if engine.gameOver && !animating {
                     VStack(spacing: 10) {
                         // Stats pill
                         HStack(spacing: 16) {
@@ -163,10 +165,19 @@ struct GameView: View {
                 }
                 board1Delays = b1WasSolved ? nil : d1
                 board2Delays = b2WasSolved ? nil : d2
+                animating = true
+                pendingMessage = engine.message
                 let total = Double(max(pool.count - 1, 0)) * flipDuration + flipDuration + 0.1
                 DispatchQueue.main.asyncAfter(deadline: .now() + total) {
                     board1Delays = nil
                     board2Delays = nil
+                    animating = false
+                    // Auto-clear deferred message after 2.5s
+                    if pendingMessage != nil {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            pendingMessage = nil
+                        }
+                    }
                 }
             } else if new < old {
                 board1Delays = nil
@@ -202,7 +213,7 @@ struct GameView: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
 
-            if !engine.gameOver {
+            if !engine.gameOver || animating {
                 Text("·")
                     .foregroundStyle(.secondary)
                 Text("\(engine.guesses.count)/\(engine.maxGuesses)")
@@ -234,6 +245,7 @@ struct GameView: View {
     // MARK: - Helpers
 
     private var keyboardSplitRatio: CGFloat {
+        guard !animating else { return 0.5 }
         if engine.board1Solved && !engine.board2Solved { return 0.25 }
         if engine.board2Solved && !engine.board1Solved { return 0.75 }
         return 0.5
