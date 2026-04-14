@@ -31,6 +31,9 @@ next-env.d.ts
 xcuserdata/
 *.xcuserstate
 
+# Xcode build output
+build/
+
 # Vite cache
 .vite/
 
