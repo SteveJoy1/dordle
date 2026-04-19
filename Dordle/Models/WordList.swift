@@ -1327,11 +1327,85 @@ enum WordList {
     }
 
     // MARK: - Single-word access (Wordle mode)
+    // Historical NYT/Wardle Wordle answers in chronological order, starting
+    // with CIGAR (the first Wordle puzzle, June 19 2021). Source:
+    // https://eagerterrier.github.io/previous-wordle-words/chronological.txt
 
-    static var totalWords: Int { answers.count }
+    static let wordleHistorical: [String] = [
+        "CIGAR", "REBUT", "SISSY", "HUMPH", "AWAKE", "BLUSH", "FOCAL", "EVADE", "NAVAL", "SERVE",
+        "HEATH", "DWARF", "MODEL", "KARMA", "STINK", "GRADE", "QUIET", "BENCH", "ABATE", "FEIGN",
+        "MAJOR", "DEATH", "FRESH", "CRUST", "STOOL", "COLON", "ABASE", "MARRY", "REACT", "BATTY",
+        "PRIDE", "FLOSS", "HELIX", "CROAK", "STAFF", "PAPER", "UNFED", "WHELP", "TRAWL", "OUTDO",
+        "ADOBE", "CRAZY", "SOWER", "REPAY", "DIGIT", "CRATE", "CLUCK", "SPIKE", "MIMIC", "POUND",
+        "MAXIM", "LINEN", "UNMET", "FLESH", "BOOBY", "FORTH", "FIRST", "STAND", "BELLY", "IVORY",
+        "SEEDY", "PRINT", "YEARN", "DRAIN", "BRIBE", "STOUT", "PANEL", "CRASS", "FLUME", "OFFAL",
+        "AGREE", "ERROR", "SWIRL", "ARGUE", "BLEED", "DELTA", "FLICK", "TOTEM", "WOOER", "FRONT",
+        "SHRUB", "PARRY", "BIOME", "LAPEL", "START", "GREET", "GONER", "GOLEM", "LUSTY", "LOOPY",
+        "ROUND", "AUDIT", "LYING", "GAMMA", "LABOR", "ISLET", "CIVIC", "FORGE", "CORNY", "MOULT",
+        "BASIC", "SALAD", "AGATE", "SPICY", "SPRAY", "ESSAY", "FJORD", "SPEND", "KEBAB", "GUILD",
+        "ABACK", "MOTOR", "ALONE", "HATCH", "HYPER", "THUMB", "DOWRY", "OUGHT", "BELCH", "DUTCH",
+        "PILOT", "TWEED", "COMET", "JAUNT", "ENEMA", "STEED", "ABYSS", "GROWL", "FLING", "DOZEN",
+        "BOOZY", "ERODE", "WORLD", "GOUGE", "CLICK", "BRIAR", "GREAT", "ALTAR", "PULPY", "BLURT",
+        "COAST", "DUCHY", "GROIN", "FIXER", "GROUP", "ROGUE", "BADLY", "SMART", "PITHY", "GAUDY",
+        "CHILL", "HERON", "VODKA", "FINER", "SURER", "RADIO", "ROUGE", "PERCH", "RETCH", "WROTE",
+        "CLOCK", "TILDE", "STORE", "PROVE", "BRING", "SOLVE", "CHEAT", "GRIME", "EXULT", "USHER",
+        "EPOCH", "TRIAD", "BREAK", "RHINO", "VIRAL", "CONIC", "MASSE", "SONIC", "VITAL", "TRACE",
+        "USING", "PEACH", "CHAMP", "BATON", "BRAKE", "PLUCK", "CRAZE", "GRIPE", "WEARY", "PICKY",
+        "ACUTE", "FERRY", "ASIDE", "TAPIR", "TROLL", "UNIFY", "REBUS", "BOOST", "TRUSS", "SIEGE",
+        "TIGER", "BANAL", "SLUMP", "CRANK", "GORGE", "QUERY", "DRINK", "FAVOR", "ABBEY", "TANGY",
+        "PANIC", "SOLAR", "SHIRE", "PROXY", "POINT", "ROBOT", "PRICK", "WINCE", "CRIMP", "KNOLL",
+        "SUGAR", "WHACK", "MOUNT", "PERKY", "COULD", "WRUNG", "LIGHT", "THOSE", "MOIST", "SHARD",
+        "PLEAT", "ALOFT", "SKILL", "ELDER", "FRAME", "HUMOR", "PAUSE", "ULCER", "ULTRA", "ROBIN",
+        "CYNIC", "AGORA", "AROMA", "CAULK", "SHAKE", "DODGE", "SWILL", "TACIT", "OTHER", "THORN",
+        "TROVE", "BLOKE", "VIVID", "SPILL", "CHANT", "CHOKE", "RUPEE", "NASTY", "MOURN", "AHEAD",
+        "BRINE", "CLOTH", "HOARD", "SWEET", "MONTH", "LAPSE", "WATCH", "TODAY", "FOCUS", "SMELT",
+        "TEASE", "CATER", "MOVIE", "SAUTE", "ALLOW", "RENEW", "THEIR", "SLOSH", "PURGE", "CHEST",
+        "DEPOT", "EPOXY", "NYMPH", "FOUND", "SHALL", "STOVE", "LOWLY", "SNOUT", "TROPE", "FEWER",
+        "SHAWL", "NATAL", "COMMA", "FORAY", "SCARE", "STAIR", "BLACK", "SQUAD", "ROYAL", "CHUNK",
+        "MINCE", "SHAME", "CHEEK", "AMPLE", "FLAIR", "FOYER", "CARGO", "OXIDE", "PLANT", "OLIVE",
+        "INERT", "ASKEW", "HEIST", "SHOWN", "ZESTY", "TRASH", "LARVA", "FORGO", "STORY", "HAIRY",
+        "TRAIN", "HOMER", "BADGE", "MIDST", "CANNY", "FETUS", "BUTCH", "SHINE", "GECKO", "FARCE",
+        "SLUNG", "TIPSY", "METAL", "YIELD", "DELVE", "BEING", "SCOUR", "GLASS", "GAMER", "SCRAP",
+        "MONEY", "HINGE", "ALBUM", "VOUCH", "ASSET", "TIARA", "CREPT", "BAYOU", "ATOLL", "MANOR",
+        "CREAK", "SHOWY", "PHASE", "FROTH", "DEPTH", "GLOOM", "FLOOD", "TRAIT", "GIRTH", "PIETY",
+        "GOOSE", "FLOAT", "DONOR", "ATONE", "PRIMO", "APRON", "BLOWN", "CACAO", "LOSER", "INPUT",
+        "GLOAT", "AWFUL", "BRINK", "SMITE", "BEADY", "RUSTY", "RETRO", "DROLL", "GAWKY", "HUTCH",
+        "PINTO", "EGRET", "LILAC", "SEVER", "FIELD", "FLUFF", "AGAPE", "VOICE", "STEAD", "BERTH",
+        "MADAM", "NIGHT", "BLAND", "LIVER", "WEDGE", "ROOMY", "WACKY", "FLOCK", "ANGRY", "TRITE",
+        "APHID", "TRYST", "MIDGE", "POWER", "ELOPE", "CINCH", "MOTTO", "STOMP", "UPSET", "BLUFF",
+        "CRAMP", "QUART", "COYLY", "YOUTH", "RHYME", "BUGGY", "ALIEN", "SMEAR", "UNFIT", "PATTY",
+        "CLING", "GLEAN", "LABEL", "HUNKY", "KHAKI", "POKER", "GRUEL", "TWICE", "TWANG", "SHRUG",
+        "TREAT", "WASTE", "MERIT", "WOVEN", "NEEDY", "CLOWN", "IRONY", "RUDER", "GAUZE", "CHIEF",
+        "ONSET", "PRIZE", "FUNGI", "CHARM", "GULLY", "INTER", "WHOOP", "TAUNT", "LEERY", "CLASS",
+        "THEME", "LOFTY", "TIBIA", "BOOZE", "ALPHA", "THYME", "DOUBT", "PARER", "CHUTE", "STICK",
+        "TRICE", "ALIKE", "RECAP", "SAINT", "GLORY", "GRATE", "ADMIT", "BRISK", "SOGGY", "USURP",
+        "SCALD", "SCORN", "LEAVE", "TWINE", "STING", "BOUGH", "MARSH", "SLOTH", "DANDY", "VIGOR",
+        "HOWDY", "ENJOY", "VALID", "IONIC", "EQUAL", "FLOOR", "CATCH", "SPADE", "STEIN", "EXIST",
+        "QUIRK", "DENIM", "GROVE", "SPIEL", "MUMMY", "FAULT", "FOGGY", "FLOUT", "CARRY", "SNEAK",
+        "LIBEL", "WALTZ", "APTLY", "PINEY", "INEPT", "ALOUD", "PHOTO", "DREAM", "STALE", "BEGIN",
+        "SNARL", "RAINY", "UNITE", "MEDAL", "VALET", "INANE", "MAPLE", "SNARL", "BAKER", "THERE",
+        "GLYPH", "POOCH", "HIPPY", "SPELL", "FOLLY", "LOUSE", "GULCH", "VAULT", "GODLY", "THREW",
+        "FLEET", "GRAVE", "INANE", "SHOCK", "CRAVE", "SPITE", "VALVE", "SKIMP", "CLAIM", "RAINY",
+        "MUSTY", "PIQUE", "DADDY", "QUASI", "ARISE", "AGING", "VALET", "OPIUM", "AVERT", "BRAVE",
+        "AXIOM", "PRIME", "DRIVE", "FEAST", "ITCHY", "CLEAN", "HAPPY", "TEPID", "UNDUE", "STUDY",
+        "EJECT", "CHAFE", "TORSO", "ADORE", "WOKEN", "AMBER", "JOUST", "INFER", "BRAID", "KNOCK",
+        "NAIVE", "APPLY", "SPOKE", "USUAL", "RIVAL", "PROBE", "CHORD", "TAPER", "SLATE", "THIRD",
+        "LUNAR", "EXCEL", "AORTA", "POISE", "EXTRA", "JUDGE", "CONDO", "IMPEL", "HAVOC", "MOLAR",
+        "MANLY", "WHINE", "SKIRT", "ANTIC", "LAYER", "SLEEK", "BELIE", "LEMON", "OPERA", "PIXIE",
+        "GRIMY", "SEDAN", "LEAPT", "HUMAN", "KOALA", "SPIRE", "FROCK", "ADOPT", "CHARD", "MUCKY",
+        "ALTER", "BLURB", "MATEY", "ELUDE", "COUNT", "MAIZE", "BEEFY", "WORRY", "FLIRT", "FISHY",
+        "CRAVE", "CROSS", "SCOLD", "SHIRK", "TASTY", "UNLIT", "DANCE", "NINTH", "APPLE", "FLAIL",
+        "STAGE", "HEADY", "DEBUG", "GIANT", "USAGE", "SOUND", "SALSA", "MAGIC", "CACHE", "AVAIL",
+        "KIOSK", "SWEAT", "RUDDY", "RIPER", "VAGUE", "ARBOR", "FIFTY", "SYRUP", "WORSE", "POLKA",
+        "MOOSE", "ABOVE", "SQUAT", "TREND", "TOXIC", "PINKY", "HORSE", "REGAL", "WHERE", "REVEL",
+        "EMAIL", "BIRTH", "BLAME", "SURLY", "SWEEP", "CIDER", "MEALY", "YACHT", "CREDO", "GLOVE",
+        "TOUGH", "DUVET", "STAID",
+    ]
+
+    static var totalWords: Int { wordleHistorical.count }
 
     static func word(at index: Int) -> String {
-        answers[index % answers.count].uppercased()
+        wordleHistorical[index % wordleHistorical.count].uppercased()
     }
 
     // MARK: - Lookup
@@ -1339,6 +1413,7 @@ enum WordList {
     private static let validSet: Set<String> = {
         var s = Set(answers.map { $0.uppercased() })
         s.formUnion(extraGuesses.map { $0.uppercased() })
+        s.formUnion(wordleHistorical)
         return s
     }()
 
