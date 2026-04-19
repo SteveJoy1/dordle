@@ -37,10 +37,26 @@ final class WordleGameEngine {
     private(set) var message: String?
     private(set) var shakeRow: Bool = false
 
-    /// Current word index — persisted.
+    /// Epoch for daily word indexing. Day 0 = this date.
+    /// Every calendar day past this advances the index by 1. Missed days
+    /// are skipped — that day's word is gone forever.
+    static let epochDate: Date = {
+        var comps = DateComponents()
+        comps.year = 2026
+        comps.month = 4
+        comps.day = 12
+        comps.timeZone = TimeZone.current
+        return Calendar.current.date(from: comps) ?? Date()
+    }()
+
+    /// Today's word index, computed from the calendar date.
+    /// Cannot be mutated — missing a day loses that day's word.
     var wordIndex: Int {
-        get { UserDefaults.standard.integer(forKey: "wordle_wordIndex") }
-        set { UserDefaults.standard.set(newValue, forKey: "wordle_wordIndex") }
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Self.epochDate)
+        let today = cal.startOfDay(for: Date())
+        let days = cal.dateComponents([.day], from: start, to: today).day ?? 0
+        return max(days, 0) % max(WordList.totalWords, 1)
     }
 
     /// Lifetime wins — persisted.
@@ -109,9 +125,8 @@ final class WordleGameEngine {
         }
     }
 
-    func nextWord() {
-        wordIndex += 1
-        clearInProgressState()
+    /// Reload today's word (e.g. if the day rolled over while app was open).
+    func refreshForToday() {
         loadCurrentWord()
     }
 
@@ -172,11 +187,12 @@ final class WordleGameEngine {
 
     // MARK: - Keyboard state
 
-    func keyboardStates() -> [Character: TileStatus] {
+    func keyboardStates(upTo count: Int? = nil) -> [Character: TileStatus] {
         let rank: [TileStatus: Int] = [.absent: 1, .present: 2, .correct: 3]
         var map: [Character: TileStatus] = [:]
 
-        for guess in guesses {
+        let limit = min(count ?? guesses.count, guesses.count)
+        for guess in guesses.prefix(limit) {
             let statuses = GameEngine.evaluate(guess: guess, target: targetWord)
             for (i, ch) in guess.enumerated() {
                 let s = statuses[i]

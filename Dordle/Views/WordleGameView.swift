@@ -7,8 +7,9 @@ struct WordleGameView: View {
     @State private var revealDelays: [Double]? = nil
     @State private var animating = false
     @State private var pendingMessage: String? = nil
+    @Environment(\.scenePhase) private var scenePhase
 
-    private let flipDuration = 0.4
+    private let flipDuration = 0.28
 
     var body: some View {
         GeometryReader { geo in
@@ -75,35 +76,12 @@ struct WordleGameView: View {
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
 
-                        HStack(spacing: 12) {
-                            Button {
-                                withAnimation { engine.retryCurrent() }
-                            } label: {
-                                Label("Retry", systemImage: "arrow.uturn.backward")
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(Color.accentColor)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.accentColor, lineWidth: 2)
-                                    )
-                            }
-
-                            Button {
-                                withAnimation { engine.nextWord() }
-                            } label: {
-                                Label("New Word", systemImage: "arrow.right")
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.accentColor)
-                                    )
-                            }
-                        }
+                        // One word per day — show when next word unlocks
+                        Text(nextWordMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
                     }
                     .padding(.vertical, 6)
                     .transition(.scale.combined(with: .opacity))
@@ -111,9 +89,9 @@ struct WordleGameView: View {
 
                 Spacer(minLength: 4)
 
-                // Keyboard — single-board mode
+                // Keyboard — single-board mode, freezes during flip animation
                 KeyboardView(
-                    states1: engine.keyboardStates(),
+                    states1: engine.keyboardStates(upTo: effectiveGuessCount),
                     states2: [:],
                     splitRatio: 1.0,
                     onKey: handleKey
@@ -158,6 +136,12 @@ struct WordleGameView: View {
         .sheet(isPresented: $showHistory) {
             WordleHistoryView(engine: engine)
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            // If the app is resumed on a new day, roll over to today's word.
+            if newPhase == .active {
+                engine.refreshForToday()
+            }
+        }
     }
 
     // MARK: - Header
@@ -170,8 +154,8 @@ struct WordleGameView: View {
 
             Spacer()
 
-            // Word progress
-            Text("Word \(engine.wordIndex + 1)/\(engine.totalWords)")
+            // Daily word number
+            Text("#\(engine.wordIndex + 1)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -207,6 +191,24 @@ struct WordleGameView: View {
 
     // MARK: - Helpers
 
+    /// Number of guesses the keyboard should reflect — excludes the currently
+    /// animating guess so keys don't change color until the flip completes.
+    private var effectiveGuessCount: Int {
+        animating ? max(engine.guesses.count - 1, 0) : engine.guesses.count
+    }
+
+    /// Human-readable message about when the next word unlocks.
+    private var nextWordMessage: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        let cal = Calendar.current
+        guard let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: Date())) else {
+            return "Come back tomorrow for a new word!"
+        }
+        let delta = formatter.localizedString(for: tomorrow, relativeTo: Date())
+        return "Next word \(delta)"
+    }
+
     private func stat(label: String, value: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
@@ -220,13 +222,25 @@ struct WordleGameView: View {
 
     private func handleKey(_ key: String) {
         switch key {
-        case "ENTER": engine.submitGuess()
+        case "ENTER":
+            // Pre-emptively enter animating state for valid guesses so the
+            // engine's success message is hidden from the moment it's set,
+            // avoiding a 1-frame flash before .onChange fires.
+            if willSubmitAnimate { animating = true }
+            engine.submitGuess()
         case "DEL":   engine.removeLetter()
         default:
             if let ch = key.first, key.count == 1 {
                 engine.addLetter(ch)
             }
         }
+    }
+
+    /// True if pressing ENTER right now will produce a flip animation.
+    private var willSubmitAnimate: Bool {
+        engine.currentGuess.count == 5
+            && WordList.isValid(engine.currentGuess.uppercased())
+            && !engine.gameOver
     }
 }
 

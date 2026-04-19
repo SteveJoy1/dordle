@@ -223,12 +223,13 @@ final class GameEngine {
         return result
     }
 
-    func keyboardStates(for board: Int) -> [Character: TileStatus] {
+    func keyboardStates(for board: Int, upTo count: Int? = nil) -> [Character: TileStatus] {
         let target = board == 0 ? targetWords.0 : targetWords.1
         let rank: [TileStatus: Int] = [.absent: 1, .present: 2, .correct: 3]
         var map: [Character: TileStatus] = [:]
 
-        for guess in guesses {
+        let limit = min(count ?? guesses.count, guesses.count)
+        for guess in guesses.prefix(limit) {
             let statuses = Self.evaluate(guess: guess, target: target)
             for (i, ch) in guess.enumerated() {
                 let s = statuses[i]

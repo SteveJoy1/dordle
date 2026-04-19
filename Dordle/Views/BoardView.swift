@@ -15,7 +15,7 @@ struct BoardView: View {
     @State private var revealedRows: Set<Int> = []
     @State private var revealingRow: Int? = nil
 
-    private let flipDuration = 0.4 // total per tile
+    private let flipDuration = 0.28 // total per tile
 
     var body: some View {
         VStack(spacing: 3) {

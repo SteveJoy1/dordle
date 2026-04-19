@@ -9,7 +9,7 @@ struct GameView: View {
     @State private var animating = false
     @State private var pendingMessage: String? = nil
 
-    private let flipDuration = 0.4
+    private let flipDuration = 0.28
 
     var body: some View {
         GeometryReader { geo in
@@ -127,10 +127,10 @@ struct GameView: View {
 
                 Spacer(minLength: 4)
 
-                // Keyboard
+                // Keyboard — freezes state during flip animation
                 KeyboardView(
-                    states1: engine.keyboardStates(for: 0),
-                    states2: engine.keyboardStates(for: 1),
+                    states1: engine.keyboardStates(for: 0, upTo: effectiveGuessCount),
+                    states2: engine.keyboardStates(for: 1, upTo: effectiveGuessCount),
                     splitRatio: keyboardSplitRatio,
                     onKey: handleKey
                 )
@@ -251,6 +251,12 @@ struct GameView: View {
         return 0.5
     }
 
+    /// Number of guesses the keyboard should reflect — excludes the currently
+    /// animating guess so keys don't change color until the flip completes.
+    private var effectiveGuessCount: Int {
+        animating ? max(engine.guesses.count - 1, 0) : engine.guesses.count
+    }
+
     private func stat(label: String, value: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
@@ -264,13 +270,26 @@ struct GameView: View {
 
     private func handleKey(_ key: String) {
         switch key {
-        case "ENTER": engine.submitGuess()
+        case "ENTER":
+            // Pre-emptively enter animating state for valid guesses so the
+            // engine's success message is hidden from the moment it's set,
+            // avoiding a 1-frame flash before .onChange fires.
+            if willSubmitAnimate { animating = true }
+            engine.submitGuess()
         case "DEL":   engine.removeLetter()
         default:
             if let ch = key.first, key.count == 1 {
                 engine.addLetter(ch)
             }
         }
+    }
+
+    /// True if pressing ENTER right now will produce a flip animation
+    /// (current guess is a complete, valid word).
+    private var willSubmitAnimate: Bool {
+        engine.currentGuess.count == 5
+            && WordList.isValid(engine.currentGuess.uppercased())
+            && !engine.gameOver
     }
 }
 
