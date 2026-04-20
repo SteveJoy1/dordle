@@ -11,6 +11,7 @@
 		07453166CCCD87F513E1F705 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 824533F76F81F9806FB71A16 /* Assets.xcassets */; };
 		0D49CFCDD60A35303BAE9E17 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B93B12962AC2002BE1354DAA /* KeyboardView.swift */; };
 		1594F043237BABF8F6C03E17 /* WordleHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F3984D43CDB9D8D49FC81 /* WordleHistoryView.swift */; };
+		3291BF8A7918B067D0D424A4 /* MersenneTwister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D87D8A6191089BC29C349A6 /* MersenneTwister.swift */; };
 		609F74CD920B19572FD2BBB4 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D065D104CA24132D9565315 /* GameView.swift */; };
 		6DAFE53D05FBEB74AB332363 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96BC50D4D529A59162FE84D8 /* GameEngine.swift */; };
 		7CE946BE91C94EEAACC9B5A1 /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 670101DA5B53FD4E1AF659B0 /* BoardView.swift */; };
@@ -31,6 +32,7 @@
 		670101DA5B53FD4E1AF659B0 /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		824533F76F81F9806FB71A16 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		96BC50D4D529A59162FE84D8 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
+		9D87D8A6191089BC29C349A6 /* MersenneTwister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MersenneTwister.swift; sourceTree = "<group>"; };
 		A6C9E72D9B219D5B1A69601A /* WordleGameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordleGameEngine.swift; sourceTree = "<group>"; };
 		AE662C71F8651CB17A2B0E0E /* Dordle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Dordle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B93B12962AC2002BE1354DAA /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
@@ -43,6 +45,7 @@
 			isa = PBXGroup;
 			children = (
 				96BC50D4D529A59162FE84D8 /* GameEngine.swift */,
+				9D87D8A6191089BC29C349A6 /* MersenneTwister.swift */,
 				A6C9E72D9B219D5B1A69601A /* WordleGameEngine.swift */,
 			);
 			path = Engine;
@@ -175,6 +178,7 @@
 				609F74CD920B19572FD2BBB4 /* GameView.swift in Sources */,
 				DCD1089A3FBA4AC0C4848C18 /* HistoryView.swift in Sources */,
 				0D49CFCDD60A35303BAE9E17 /* KeyboardView.swift in Sources */,
+				3291BF8A7918B067D0D424A4 /* MersenneTwister.swift in Sources */,
 				C12F7358E524BC16BCF1BD27 /* TileView.swift in Sources */,
 				B04DB44BD73A5962AFA07C53 /* WordList.swift in Sources */,
 				9D1F64AE5D3C4920881ECB19 /* WordleGameEngine.swift in Sources */,
@@ -192,7 +196,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dordle;
@@ -217,7 +221,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dordle;

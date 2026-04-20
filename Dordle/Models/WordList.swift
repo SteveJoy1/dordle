@@ -1312,19 +1312,283 @@ enum WordList {
         "zuppa","zurfs","zuzim","zygal","zygon","zymes","zymic",
     ]
 
-    // MARK: - Deterministic pairs
+    // MARK: - Dordle answers (Zaratustra's original list)
+    // The exact 2344-word list from Dordle's source at zaratustra.itch.io/dordle,
+    // decoded from the compressed JS blob. Used with MersenneTwister and a
+    // date-based seed to reproduce the REAL daily Dordle pair.
 
-    static let pairs: [(String, String)] = {
-        let list = answers.map { $0.uppercased() }
-        let half = list.count / 2
-        return (0..<half).map { i in (list[i], list[half + i]) }
+    static let dordleAnswers: [String] = [
+        "ABACK", "ABASE", "ABATE", "ABBEY", "ABBOT", "ABHOR", "ABIDE", "ABODE", "ABORT", "ABOUT",
+        "ABOVE", "ABUZZ", "ABYSS", "ACORN", "ACRID", "ACTOR", "ACUTE", "ADAGE", "ADAPT", "ADDER",
+        "ADEPT", "ADMIT", "ADOBE", "ADOPT", "ADORE", "ADORN", "ADULT", "AEGIS", "AFFIX", "AFIRE",
+        "AFOOT", "AFOUL", "AFTER", "AGAIN", "AGAPE", "AGATE", "AGAVE", "AGENT", "AGILE", "AGING",
+        "AGLOW", "AGONY", "AGORA", "AGREE", "AHEAD", "AISLE", "ALARM", "ALBUM", "ALDER", "ALERT",
+        "ALGAE", "ALIAS", "ALIBI", "ALIEN", "ALIGN", "ALIKE", "ALIVE", "ALLAY", "ALLEY", "ALLOT",
+        "ALLOW", "ALLOY", "ALOFT", "ALONE", "ALONG", "ALOOF", "ALOUD", "ALPHA", "ALTAR", "ALTER",
+        "AMASS", "AMAZE", "AMBER", "AMBLE", "AMEND", "AMISS", "AMITY", "AMONG", "AMPLE", "AMPLY",
+        "AMUSE", "ANGEL", "ANGER", "ANGLE", "ANGRY", "ANGST", "ANIME", "ANION", "ANISE", "ANKLE",
+        "ANNEX", "ANNOY", "ANNUL", "ANODE", "ANTIC", "ANVIL", "AORTA", "APART", "APHID", "APNEA",
+        "APPLE", "APPLY", "APRON", "APTLY", "ARENA", "ARGON", "ARGOT", "ARGUE", "ARISE", "ARMED",
+        "AROMA", "AROSE", "ARRAY", "ARROW", "ARSON", "ARTSY", "ASCOT", "ASHEN", "ASIDE", "ASKEW",
+        "ASPIC", "ASSAY", "ASSET", "ATLAS", "ATOLL", "ATONE", "ATTIC", "AUDIO", "AUDIT", "AUGER",
+        "AUGHT", "AUGUR", "AURAL", "AVAIL", "AVERT", "AVIAN", "AVOID", "AWAIT", "AWAKE", "AWARD",
+        "AWARE", "AWASH", "AWFUL", "AXIAL", "AXIOM", "AZURE", "BACON", "BADGE", "BADLY", "BAGEL",
+        "BAGGY", "BAKER", "BALMY", "BALSA", "BANAL", "BANDY", "BANJO", "BARGE", "BARON", "BASAL",
+        "BASIC", "BASIL", "BASIN", "BASIS", "BASTE", "BATCH", "BATHE", "BATON", "BATTY", "BAYOU",
+        "BEACH", "BEADY", "BEARD", "BEAST", "BEBOP", "BEECH", "BEEFY", "BEFIT", "BEGET", "BEGIN",
+        "BEIGE", "BEING", "BELAY", "BELCH", "BELIE", "BELLE", "BELLY", "BELOW", "BENCH", "BERET",
+        "BERRY", "BERTH", "BERYL", "BESET", "BESOT", "BEVEL", "BIBLE", "BICEP", "BIDDY", "BIDET",
+        "BIGOT", "BIKER", "BILGE", "BILLY", "BINGE", "BINGO", "BIOME", "BIPED", "BIRCH", "BIRTH",
+        "BISON", "BLACK", "BLADE", "BLAME", "BLAND", "BLANK", "BLARE", "BLAST", "BLAZE", "BLEAK",
+        "BLEAT", "BLEED", "BLEEP", "BLEND", "BLESS", "BLIMP", "BLIND", "BLINK", "BLISS", "BLITZ",
+        "BLOAT", "BLOCK", "BLOND", "BLOOD", "BLOOM", "BLUES", "BLUFF", "BLUNT", "BLURB", "BLURT",
+        "BLUSH", "BOARD", "BOAST", "BOBBY", "BOGEY", "BOGUS", "BONGO", "BONUS", "BOOST", "BOOTH",
+        "BOOZE", "BORAX", "BORON", "BOSOM", "BOSSY", "BOTCH", "BOUGH", "BOUND", "BOWEL", "BOWER",
+        "BOXER", "BRACE", "BRAID", "BRAIN", "BRAKE", "BRAND", "BRASH", "BRASS", "BRAVE", "BRAVO",
+        "BRAWL", "BRAWN", "BREAD", "BREAK", "BREED", "BRIBE", "BRICK", "BRIDE", "BRIEF", "BRINE",
+        "BRING", "BRINK", "BRINY", "BRISK", "BROAD", "BROIL", "BROKE", "BROOD", "BROOK", "BROOM",
+        "BROTH", "BROWN", "BRUNT", "BRUSH", "BRUTE", "BUDDY", "BUDGE", "BUGGY", "BUGLE", "BUILD",
+        "BUILT", "BULGE", "BULKY", "BULLY", "BUNCH", "BUNNY", "BURLY", "BURNT", "BURST", "BUSHY",
+        "BUTCH", "BUTTE", "BUXOM", "BUYER", "BYLAW", "BYWAY", "CABAL", "CABBY", "CABIN", "CABLE",
+        "CACAO", "CACHE", "CADET", "CADRE", "CAGED", "CAGEY", "CAIRN", "CALVE", "CAMEL", "CAMEO",
+        "CANAL", "CANDY", "CANNY", "CANOE", "CANON", "CAPER", "CARAT", "CARDS", "CARET", "CARGO",
+        "CAROL", "CARRY", "CARVE", "CASTE", "CATCH", "CATER", "CATTY", "CAULK", "CAUSE", "CAVIL",
+        "CEASE", "CEDAR", "CELLO", "CHAFE", "CHAFF", "CHAIN", "CHAIR", "CHALK", "CHAMP", "CHANT",
+        "CHAOS", "CHARM", "CHART", "CHASE", "CHASM", "CHEAP", "CHEAT", "CHECK", "CHEEK", "CHEER",
+        "CHESS", "CHEST", "CHEWY", "CHICK", "CHIDE", "CHIEF", "CHILD", "CHILL", "CHIME", "CHINA",
+        "CHIRP", "CHIVE", "CHOCK", "CHOIR", "CHOKE", "CHOMP", "CHORD", "CHORE", "CHOSE", "CHUCK",
+        "CHUMP", "CHUNK", "CHURN", "CHUTE", "CIDER", "CIGAR", "CINCH", "CIRCA", "CIVET", "CIVIC",
+        "CIVIL", "CLACK", "CLAIM", "CLAMP", "CLANG", "CLANK", "CLASH", "CLASP", "CLASS", "CLEAN",
+        "CLEAR", "CLEAT", "CLEFT", "CLERK", "CLICK", "CLIFF", "CLIMB", "CLIME", "CLING", "CLINK",
+        "CLOAK", "CLOCK", "CLONE", "CLOSE", "CLOTH", "CLOUD", "CLOUT", "CLOVE", "CLOWN", "CLUCK",
+        "CLUMP", "CLUNG", "COACH", "COAST", "COBRA", "COCOA", "CODEX", "COLIC", "COLON", "COMET",
+        "COMFY", "COMIC", "COMMA", "CONCH", "CONDO", "CONGA", "CONIC", "COPSE", "CORAL", "CORNY",
+        "CORPS", "COUCH", "COUGH", "COUNT", "COUPE", "COURT", "COVEN", "COVER", "COVET", "COVEY",
+        "COWER", "COYLY", "CRACK", "CRAFT", "CRAMP", "CRANE", "CRANK", "CRAPS", "CRASS", "CRATE",
+        "CRAVE", "CRAWL", "CRAZE", "CRAZY", "CREAK", "CREAM", "CREED", "CREEK", "CREEP", "CREPE",
+        "CREPT", "CRESS", "CREST", "CRIED", "CRIER", "CRIME", "CRIMP", "CRISP", "CROAK", "CROCK",
+        "CRONE", "CRONY", "CROOK", "CROON", "CROSS", "CROUP", "CROWD", "CROWN", "CRUDE", "CRUEL",
+        "CRUET", "CRUMB", "CRUSH", "CRUST", "CRYPT", "CUBIC", "CUBIT", "CUMIN", "CUPID", "CURIE",
+        "CURIO", "CURLY", "CURRY", "CURSE", "CURVE", "CURVY", "CUSHY", "CYCLE", "CYNIC", "DADDY",
+        "DAILY", "DAIRY", "DAISY", "DALLY", "DANCE", "DANDY", "DARTS", "DATUM", "DAUNT", "DEATH",
+        "DEBAR", "DEBIT", "DEBUG", "DEBUT", "DECAF", "DECAL", "DECAY", "DECOR", "DECOY", "DECRY",
+        "DEFER", "DEIFY", "DEIGN", "DEISM", "DEITY", "DELAY", "DELTA", "DELVE", "DEMON", "DEMUR",
+        "DENIM", "DENSE", "DEPOT", "DEPTH", "DETER", "DETOX", "DEUCE", "DEVIL", "DIARY", "DICEY",
+        "DIGIT", "DILLY", "DIMLY", "DINER", "DINGO", "DINGY", "DINKY", "DIODE", "DIRGE", "DIRTY",
+        "DISCO", "DITCH", "DITTO", "DITTY", "DIVAN", "DIVER", "DIVOT", "DIVVY", "DIZZY", "DODGE",
+        "DOGMA", "DOILY", "DOING", "DOLLY", "DOMED", "DONOR", "DOUBT", "DOUGH", "DOUSE", "DOWDY",
+        "DOWEL", "DOWNY", "DOWRY", "DOWSE", "DOZEN", "DRAFT", "DRAIN", "DRAMA", "DRANK", "DRAPE",
+        "DRAWL", "DREAD", "DREAM", "DREGS", "DRESS", "DRIER", "DRIFT", "DRILL", "DRINK", "DRIVE",
+        "DROLL", "DRONE", "DROOL", "DROOP", "DROSS", "DROVE", "DROWN", "DRUID", "DRUNK", "DRYAD",
+        "DRYER", "DRYLY", "DUCAL", "DUCAT", "DUCHY", "DULLY", "DUMPY", "DUNCE", "DUSKY", "DUSTY",
+        "DUVET", "DWARF", "DWELL", "DYING", "EAGER", "EAGLE", "EARLY", "EARTH", "EASEL", "EATER",
+        "EBONY", "EDICT", "EDIFY", "EERIE", "EGRET", "EIGHT", "EJECT", "EKING", "ELATE", "ELBOW",
+        "ELDER", "ELECT", "ELEGY", "ELFIN", "ELIDE", "ELITE", "ELOPE", "ELUDE", "EMAIL", "EMBED",
+        "EMBER", "EMCEE", "EMERY", "EMPTY", "ENACT", "ENDOW", "ENEMY", "ENJOY", "ENNUI", "ENSUE",
+        "ENTER", "ENTRY", "ENVOY", "EPOCH", "EPOXY", "EQUAL", "EQUIP", "ERASE", "ERODE", "ERROR",
+        "ERUPT", "ESSAY", "ESTER", "ETHER", "ETHIC", "ETHOS", "EVADE", "EVENT", "EVERY", "EVICT",
+        "EVOKE", "EXACT", "EXALT", "EXCEL", "EXERT", "EXILE", "EXIST", "EXPEL", "EXTOL", "EXTRA",
+        "EXUDE", "EXULT", "FABLE", "FACET", "FADED", "FAINT", "FAIRY", "FAITH", "FAKER", "FAKIR",
+        "FALLS", "FALSE", "FANCY", "FARCE", "FATAL", "FATTY", "FAULT", "FAUNA", "FEAST", "FEIGN",
+        "FEINT", "FELON", "FEMUR", "FENCE", "FERAL", "FERRY", "FETAL", "FETCH", "FETID", "FETUS",
+        "FEVER", "FEWER", "FICUS", "FIELD", "FIEND", "FIERY", "FIFTH", "FIFTY", "FIGHT", "FILCH",
+        "FILET", "FILLY", "FILMY", "FILTH", "FINAL", "FINCH", "FINER", "FIRST", "FISHY", "FIXED",
+        "FIXER", "FIZZY", "FJORD", "FLACK", "FLAIL", "FLAIR", "FLAKE", "FLAKY", "FLAME", "FLANK",
+        "FLARE", "FLASH", "FLASK", "FLECK", "FLEET", "FLESH", "FLICK", "FLIER", "FLING", "FLINT",
+        "FLIRT", "FLOAT", "FLOCK", "FLOOD", "FLOOR", "FLORA", "FLOSS", "FLOUR", "FLOUT", "FLOWN",
+        "FLUFF", "FLUID", "FLUKE", "FLUME", "FLUNG", "FLUNK", "FLUSH", "FLUTE", "FLYBY", "FOAMY",
+        "FOCAL", "FOCUS", "FOGGY", "FOIST", "FOLIO", "FOLKS", "FOLLY", "FORAY", "FORCE", "FORGE",
+        "FORGO", "FORTE", "FORTH", "FORTY", "FORUM", "FOUND", "FOUNT", "FOYER", "FRAIL", "FRAME",
+        "FRANK", "FRAUD", "FREAK", "FREER", "FRESH", "FRIAR", "FRIED", "FRIES", "FRILL", "FRISK",
+        "FRIZZ", "FROCK", "FROND", "FRONT", "FROST", "FROTH", "FROWN", "FROZE", "FRUIT", "FRYER",
+        "FUDGE", "FUGUE", "FULLY", "FUNDS", "FUNGI", "FUNKY", "FUNNY", "FURRY", "FUSSY", "FUSTY",
+        "FUTON", "FUZZY", "GABLE", "GAFFE", "GAILY", "GAMER", "GAMMA", "GAMUT", "GASSY", "GAUDY",
+        "GAUGE", "GAUNT", "GAUZE", "GAUZY", "GAVEL", "GAWKY", "GAZER", "GECKO", "GELID", "GENIE",
+        "GENRE", "GENUS", "GEODE", "GHOST", "GHOUL", "GIANT", "GIDDY", "GIRTH", "GIVEN", "GLADE",
+        "GLAND", "GLARE", "GLASS", "GLAZE", "GLEAM", "GLEAN", "GLIDE", "GLINT", "GLITZ", "GLOAT",
+        "GLOBE", "GLOOM", "GLORY", "GLOSS", "GLOVE", "GLYPH", "GNARL", "GNASH", "GNOME", "GODLY",
+        "GOFER", "GOING", "GOLEM", "GONER", "GOODS", "GOODY", "GOOEY", "GOOSE", "GORGE", "GOUGE",
+        "GOURD", "GRACE", "GRADE", "GRAFT", "GRAIL", "GRAIN", "GRAND", "GRANT", "GRAPE", "GRAPH",
+        "GRASP", "GRASS", "GRATE", "GRAVE", "GRAVY", "GRAZE", "GREAT", "GREED", "GREEN", "GREET",
+        "GRIEF", "GRILL", "GRIME", "GRIMY", "GRIND", "GRIPE", "GRIST", "GROAN", "GROIN", "GROOM",
+        "GROUP", "GROUT", "GROVE", "GROWL", "GRUEL", "GRUFF", "GRUNT", "GUANO", "GUARD", "GUAVA",
+        "GUESS", "GUEST", "GUIDE", "GUILD", "GUILE", "GUILT", "GUISE", "GULCH", "GULLY", "GUMBO",
+        "GUMMY", "GUPPY", "GUSTO", "GUSTY", "GUTSY", "HABIT", "HAIKU", "HAIRY", "HALVE", "HANDY",
+        "HAPPY", "HARDY", "HARPY", "HARRY", "HARSH", "HASTE", "HASTY", "HATCH", "HATER", "HAUNT",
+        "HAVEN", "HAVOC", "HAZEL", "HEADY", "HEAPS", "HEARD", "HEART", "HEATH", "HEAVE", "HEAVY",
+        "HEDGE", "HEFTY", "HEIST", "HELIX", "HELLO", "HENCE", "HERON", "HIKER", "HILLY", "HINGE",
+        "HIPPO", "HIPPY", "HITCH", "HOARD", "HOARY", "HOBBY", "HOIST", "HOLED", "HOLLY", "HONEY",
+        "HOOKY", "HORDE", "HORSE", "HOSED", "HOTEL", "HOTLY", "HOUND", "HOUSE", "HOVEL", "HOVER",
+        "HOWDY", "HUFFY", "HUMAN", "HUMID", "HUMUS", "HUNCH", "HURRY", "HUTCH", "HYDRA", "HYENA",
+        "HYPER", "ICILY", "ICING", "IDEAL", "IDIOM", "IDIOT", "IDLER", "IDYLL", "IGLOO", "IMAGE",
+        "IMBUE", "IMPEL", "IMPLY", "INANE", "INCUR", "INDEX", "INEPT", "INERT", "INFER", "INFIX",
+        "INGOT", "INLAY", "INLET", "INNER", "INPUT", "INSET", "INTEL", "INTER", "INURE", "IRATE",
+        "IRONY", "ISLET", "ISSUE", "ITCHY", "IVORY", "JACKS", "JAUNT", "JAWED", "JEANS", "JELLY",
+        "JERKY", "JETTY", "JEWEL", "JIFFY", "JOINT", "JOIST", "JOKER", "JOLLY", "JOULE", "JOUST",
+        "JUDGE", "JUICE", "JUICY", "JUMBO", "JUMPY", "JUNTA", "JUROR", "KAYAK", "KAZOO", "KEBAB",
+        "KHAKI", "KIOSK", "KITTY", "KNACK", "KNAVE", "KNEAD", "KNEED", "KNEEL", "KNELL", "KNIFE",
+        "KNOCK", "KNOLL", "KOALA", "KUDOS", "KUDZU", "LABEL", "LACED", "LADEN", "LADLE", "LAGER",
+        "LAITY", "LANCE", "LANKY", "LAPEL", "LAPSE", "LARCH", "LARGE", "LARVA", "LASER", "LASSO",
+        "LATCH", "LATER", "LATEX", "LATHE", "LATTE", "LAUGH", "LAYER", "LEACH", "LEAFY", "LEAKY",
+        "LEARN", "LEASE", "LEASH", "LEAST", "LEAVE", "LEDGE", "LEECH", "LEERY", "LEFTY", "LEGAL",
+        "LEGGY", "LEGIT", "LEMMA", "LEMON", "LEMUR", "LETUP", "LEVEE", "LEVEL", "LEVER", "LIBEL",
+        "LIEGE", "LIFER", "LIGHT", "LIKEN", "LILAC", "LIMBO", "LIMIT", "LINEN", "LINER", "LINGO",
+        "LINKS", "LIPID", "LITHE", "LIVER", "LIVID", "LLAMA", "LOAMY", "LOATH", "LOBBY", "LOBED",
+        "LOCAL", "LOCUS", "LODGE", "LOFTY", "LOGIC", "LONER", "LOOSE", "LORRY", "LOSER", "LOTTO",
+        "LOTUS", "LOUSE", "LOUSY", "LOVER", "LOWER", "LOWLY", "LOYAL", "LUCID", "LUCKY", "LUMEN",
+        "LUMPY", "LUNAR", "LUNCH", "LUNGE", "LUPUS", "LURCH", "LURID", "LYING", "LYMPH", "LYRIC",
+        "MACAW", "MACHO", "MACRO", "MADAM", "MADLY", "MAGIC", "MAGMA", "MAINS", "MAIZE", "MAJOR",
+        "MAKER", "MAMBO", "MAMMA", "MANGE", "MANGO", "MANGY", "MANIA", "MANLY", "MANOR", "MANSE",
+        "MAPLE", "MARCH", "MARRY", "MARSH", "MASON", "MATCH", "MATTE", "MAUVE", "MAVEN", "MAXIM",
+        "MAYBE", "MAYOR", "MEALY", "MEANS", "MEANT", "MEATY", "MEDAL", "MEDIA", "MEDIC", "MELON",
+        "MERCY", "MERGE", "MERIT", "MERRY", "METAL", "METER", "METRO", "MICRO", "MIDGE", "MIDST",
+        "MIGHT", "MILKY", "MIMIC", "MINCE", "MINER", "MINIM", "MINOR", "MINTY", "MINUS", "MIRTH",
+        "MISER", "MIXED", "MIXER", "MOCHA", "MODAL", "MODEL", "MODEM", "MOGUL", "MOIST", "MOLAR",
+        "MONEY", "MONTH", "MOOCH", "MOODY", "MOOSE", "MOPED", "MORAL", "MORAY", "MORES", "MOSSY",
+        "MOTEL", "MOTIF", "MOTOR", "MOTTO", "MOUND", "MOUNT", "MOURN", "MOUSE", "MOUSY", "MOUTH",
+        "MOVER", "MOVIE", "MOWER", "MUCKY", "MUCUS", "MUDDY", "MULCH", "MUMMY", "MUNCH", "MURAL",
+        "MURKY", "MUSHY", "MUSIC", "MUSKY", "MUSTY", "MUTED", "MYRRH", "NACHO", "NADIR", "NAIAD",
+        "NAIVE", "NANNY", "NASAL", "NATAL", "NAVAL", "NAVEL", "NEEDS", "NEEDY", "NEIGH", "NERVE",
+        "NEVER", "NEWLY", "NEXUS", "NICHE", "NIECE", "NIFTY", "NIGHT", "NINJA", "NINTH", "NOBLE",
+        "NOBLY", "NOISE", "NOISY", "NOMAD", "NOOSE", "NORTH", "NOTCH", "NOTED", "NOVEL", "NUDGE",
+        "NURSE", "NUTTY", "NYLON", "NYMPH", "OAKEN", "OASIS", "OBESE", "OCCUR", "OCEAN", "OCTAL",
+        "OCTET", "ODDLY", "OFFAL", "OFFER", "OFTEN", "OILED", "OLDEN", "OLIVE", "OMEGA", "ONION",
+        "ONSET", "OPERA", "OPINE", "OPIUM", "OPTIC", "ORBIT", "ORDER", "ORGAN", "OTHER", "OTTER",
+        "OUGHT", "OUNCE", "OUTDO", "OUTER", "OUTGO", "OVARY", "OVERT", "OVINE", "OVOID", "OWLET",
+        "OWNER", "OXBOW", "OXIDE", "OZONE", "PAEAN", "PAGAN", "PAGER", "PAINT", "PALSY", "PANDA",
+        "PANEL", "PANIC", "PANTS", "PAPAL", "PAPER", "PARCH", "PARKA", "PARRY", "PARSE", "PARTY",
+        "PASTA", "PASTE", "PATCH", "PATIO", "PATSY", "PATTY", "PAUSE", "PAYEE", "PAYER", "PEACE",
+        "PEACH", "PEARL", "PECAN", "PEDAL", "PEEVE", "PENAL", "PENNY", "PEPPY", "PERCH", "PERIL",
+        "PERKY", "PESKY", "PETAL", "PETER", "PETTY", "PHASE", "PHIAL", "PHONE", "PHONY", "PHOTO",
+        "PIANO", "PICKY", "PIECE", "PIETY", "PIGGY", "PILAF", "PILED", "PILOT", "PINCH", "PINTO",
+        "PIOUS", "PIPED", "PIPER", "PIQUE", "PITCH", "PITHY", "PITON", "PIVOT", "PIXEL", "PIXIE",
+        "PIZZA", "PLACE", "PLAID", "PLAIN", "PLAIT", "PLANE", "PLANK", "PLANT", "PLATE", "PLAZA",
+        "PLEAD", "PLEAT", "PLIED", "PLUCK", "PLUMB", "PLUME", "PLUMP", "PLUNK", "PLUSH", "POACH",
+        "POESY", "POINT", "POISE", "POKER", "POKEY", "POLAR", "POLIO", "POLKA", "POLYP", "POOCH",
+        "POPPY", "PORCH", "POSER", "POSIT", "POSSE", "POUCH", "POUND", "POWER", "PRANK", "PRAWN",
+        "PREEN", "PRESS", "PRICE", "PRIDE", "PRIED", "PRIME", "PRIMP", "PRINT", "PRIOR", "PRISM",
+        "PRIVY", "PRIZE", "PROBE", "PRONE", "PRONG", "PROOF", "PROSE", "PROUD", "PROVE", "PROWL",
+        "PROXY", "PRUDE", "PRUNE", "PSALM", "PSYCH", "PUDGY", "PUFFY", "PULPY", "PULSE", "PUNCH",
+        "PUPAL", "PUPIL", "PUPPY", "PUREE", "PURGE", "PURSE", "PUSHY", "PUTTY", "PYLON", "QUACK",
+        "QUAFF", "QUAIL", "QUAKE", "QUALM", "QUARK", "QUART", "QUASH", "QUASI", "QUEEN", "QUEER",
+        "QUELL", "QUERY", "QUEST", "QUEUE", "QUICK", "QUIET", "QUILL", "QUILT", "QUIRE", "QUIRK",
+        "QUITE", "QUOTA", "QUOTE", "QUOTH", "RABBI", "RABID", "RACER", "RADAR", "RADIO", "RADON",
+        "RAINY", "RAISE", "RAJAH", "RALLY", "RANCH", "RANGE", "RAPID", "RASPY", "RATIO", "RATTY",
+        "RAVEL", "RAVEN", "RAYON", "RAZOR", "REACH", "REACT", "READY", "REALM", "REARM", "REBAR",
+        "REBEL", "REBUS", "REBUT", "RECAP", "RECUR", "RECUT", "REEDY", "REFER", "REFIT", "REGAL",
+        "REHAB", "REIGN", "REINS", "RELAX", "RELAY", "RELIC", "REMIT", "RENAL", "RENEW", "REPAY",
+        "REPEL", "REPLY", "RERUN", "RESET", "RESIN", "RETCH", "RETRY", "REUSE", "REVEL", "REVUE",
+        "RHEUM", "RHINO", "RHYME", "RIDER", "RIDGE", "RIFLE", "RIGHT", "RIGID", "RINSE", "RIPEN",
+        "RISEN", "RISER", "RISKY", "RITZY", "RIVAL", "RIVER", "RIVET", "ROACH", "ROAST", "ROBIN",
+        "ROBOT", "ROCKY", "RODEO", "ROGER", "ROGUE", "ROMAN", "ROOMY", "ROOST", "ROTOR", "ROUGE",
+        "ROUGH", "ROUND", "ROUSE", "ROUTE", "ROVER", "ROWDY", "ROWER", "ROYAL", "RUDDY", "RUGBY",
+        "RULER", "RUMBA", "RUNNY", "RUPEE", "RURAL", "RUSTY", "SABLE", "SADLY", "SAINT", "SALAD",
+        "SALLY", "SALON", "SALSA", "SALTY", "SALVE", "SALVO", "SAMBA", "SANDY", "SAPPY", "SASSY",
+        "SATIN", "SATYR", "SAUCE", "SAUCY", "SAUNA", "SAVVY", "SCALD", "SCALE", "SCALP", "SCALY",
+        "SCAMP", "SCANT", "SCARE", "SCARF", "SCARY", "SCENE", "SCENT", "SCHWA", "SCION", "SCOFF",
+        "SCOLD", "SCONE", "SCOOP", "SCOOT", "SCOPE", "SCORE", "SCORN", "SCOUR", "SCOUT", "SCOWL",
+        "SCRAM", "SCRAP", "SCREW", "SCRIP", "SCRUB", "SCUBA", "SCUFF", "SEAMY", "SEDAN", "SEEDY",
+        "SEGUE", "SEIZE", "SENSE", "SEPIA", "SERIF", "SERUM", "SERVE", "SETUP", "SEVEN", "SEVER",
+        "SEWER", "SHACK", "SHADE", "SHADY", "SHAFT", "SHAKE", "SHAKY", "SHALE", "SHALL", "SHAME",
+        "SHANK", "SHAPE", "SHARD", "SHARE", "SHARK", "SHARP", "SHAVE", "SHAWL", "SHEAF", "SHEAR",
+        "SHEEN", "SHEEP", "SHEER", "SHEET", "SHELF", "SHELL", "SHIED", "SHIFT", "SHILL", "SHINE",
+        "SHINY", "SHIRE", "SHIRK", "SHIRT", "SHOAL", "SHOCK", "SHONE", "SHOOK", "SHOOT", "SHORE",
+        "SHORT", "SHOUT", "SHOVE", "SHOWY", "SHRED", "SHREW", "SHRUB", "SHRUG", "SHUCK", "SHUNT",
+        "SHUSH", "SHYLY", "SIBYL", "SIDLE", "SIEGE", "SIEVE", "SIGHT", "SIGMA", "SILKY", "SILLY",
+        "SINCE", "SINEW", "SINGE", "SINUS", "SIREN", "SITAR", "SIXTH", "SIXTY", "SKATE", "SKEIN",
+        "SKIER", "SKIFF", "SKILL", "SKIMP", "SKIRT", "SKULK", "SKULL", "SKUNK", "SLACK", "SLAIN",
+        "SLANG", "SLASH", "SLATE", "SLEEK", "SLEEP", "SLEET", "SLEPT", "SLICE", "SLICK", "SLIDE",
+        "SLIME", "SLIMY", "SLING", "SLINK", "SLOOP", "SLOPE", "SLOSH", "SLOTH", "SLUMP", "SLUNG",
+        "SLUNK", "SLURP", "SLUSH", "SLYLY", "SMALL", "SMART", "SMASH", "SMEAR", "SMELL", "SMELT",
+        "SMILE", "SMIRK", "SMITE", "SMITH", "SMOCK", "SMOKE", "SMOKY", "SMOTE", "SNACK", "SNAIL",
+        "SNAKE", "SNAKY", "SNARE", "SNARL", "SNEAK", "SNEER", "SNIDE", "SNIFF", "SNIPE", "SNIPS",
+        "SNOOP", "SNORE", "SNORT", "SNOUT", "SNOWY", "SOAPY", "SOBER", "SOFTY", "SOGGY", "SOLAR",
+        "SOLID", "SOLVE", "SONAR", "SONIC", "SOOTH", "SORRY", "SOUND", "SOUPY", "SOUTH", "SOWER",
+        "SPACE", "SPARE", "SPARK", "SPASM", "SPAWN", "SPEAK", "SPEAR", "SPECK", "SPECS", "SPEED",
+        "SPELL", "SPEND", "SPENT", "SPICE", "SPICY", "SPIED", "SPIEL", "SPIKE", "SPIKY", "SPILL",
+        "SPINE", "SPINY", "SPIRE", "SPITE", "SPLAT", "SPLAY", "SPLIT", "SPOIL", "SPOKE", "SPOOF",
+        "SPOOK", "SPOOL", "SPOON", "SPOOR", "SPORE", "SPORT", "SPOUT", "SPRAY", "SPREE", "SPRIG",
+        "SPURN", "SPURT", "SQUAD", "SQUAT", "SQUID", "STACK", "STAFF", "STAGE", "STAID", "STAIN",
+        "STAIR", "STAKE", "STALE", "STALK", "STALL", "STAMP", "STAND", "STANK", "STAPH", "STARE",
+        "STARK", "START", "STASH", "STATE", "STATS", "STAVE", "STEAD", "STEAK", "STEAL", "STEAM",
+        "STEED", "STEEL", "STEEP", "STEER", "STEIN", "STENT", "STERN", "STICK", "STIFF", "STILL",
+        "STILT", "STING", "STINK", "STINT", "STOAT", "STOCK", "STOKE", "STOLE", "STOMP", "STONE",
+        "STONY", "STOOD", "STOOL", "STOOP", "STORE", "STORK", "STORM", "STORY", "STOUT", "STOVE",
+        "STRAP", "STRAW", "STRAY", "STREP", "STRIP", "STRUM", "STRUT", "STUCK", "STUDY", "STUFF",
+        "STUMP", "STUNG", "STUNK", "STUNT", "STYLE", "SUAVE", "SUEDE", "SUGAR", "SUING", "SUITE",
+        "SULKY", "SULLY", "SUMAC", "SUNNY", "SUPER", "SURGE", "SURLY", "SUSHI", "SWAMI", "SWAMP",
+        "SWANK", "SWARM", "SWASH", "SWATH", "SWEAR", "SWEAT", "SWEEP", "SWEET", "SWELL", "SWEPT",
+        "SWIFT", "SWILL", "SWINE", "SWING", "SWIPE", "SWIRL", "SWISH", "SWOON", "SWOOP", "SWORD",
+        "SWORE", "SWORN", "SWUNG", "SYLPH", "SYNOD", "SYRUP", "TABBY", "TABLE", "TACIT", "TACKY",
+        "TAFFY", "TAILS", "TAINT", "TAKER", "TALLY", "TALON", "TAMER", "TANGO", "TANGY", "TAPER",
+        "TAPIR", "TARDY", "TAROT", "TARRY", "TASTE", "TASTY", "TATTY", "TAUNT", "TAUPE", "TAWNY",
+        "TEACH", "TEARY", "TEASE", "TEETH", "TELEX", "TEMPO", "TEMPT", "TENET", "TENOR", "TENSE",
+        "TENTH", "TEPEE", "TEPID", "TERSE", "TESTY", "THANK", "THEFT", "THEIR", "THEME", "THERE",
+        "THESE", "THETA", "THICK", "THIEF", "THIGH", "THING", "THINK", "THIRD", "THONG", "THORN",
+        "THOSE", "THREE", "THREW", "THROB", "THROW", "THRUM", "THUMB", "THUMP", "THYME", "TIARA",
+        "TIBIA", "TIDAL", "TIGER", "TIGHT", "TILDE", "TIMER", "TIMID", "TINGE", "TINNY", "TIPSY",
+        "TIRED", "TITAN", "TITHE", "TITLE", "TOADY", "TOAST", "TODAY", "TODDY", "TOKEN", "TONAL",
+        "TONED", "TONER", "TONGS", "TONIC", "TOOTH", "TOPAZ", "TOPIC", "TOQUE", "TORCH", "TORSO",
+        "TORUS", "TOTAL", "TOTEM", "TOUCH", "TOUGH", "TOWEL", "TOWER", "TOXIC", "TOXIN", "TRACE",
+        "TRACK", "TRACT", "TRADE", "TRAIL", "TRAIN", "TRAIT", "TRASH", "TRAWL", "TREAD", "TREAT",
+        "TREND", "TRESS", "TRIAD", "TRIAL", "TRIBE", "TRICE", "TRICK", "TRIED", "TRIKE", "TRILL",
+        "TRIPE", "TRITE", "TROLL", "TROOP", "TROPE", "TROUT", "TRUCE", "TRUCK", "TRULY", "TRUMP",
+        "TRUNK", "TRUSS", "TRUST", "TRUTH", "TRYST", "TUBER", "TULIP", "TULLE", "TUMMY", "TUNER",
+        "TUNIC", "TURBO", "TUTOR", "TWAIN", "TWANG", "TWEAK", "TWEED", "TWEET", "TWICE", "TWINE",
+        "TWIRL", "TWIST", "TYING", "UDDER", "ULCER", "ULTRA", "UMBER", "UMBRA", "UNCLE", "UNCUT",
+        "UNDER", "UNDID", "UNDUE", "UNFIT", "UNIFY", "UNION", "UNITE", "UNITY", "UNPIN", "UNSAY",
+        "UNSET", "UNTIE", "UNTIL", "UNZIP", "UPEND", "UPPER", "UPSET", "URBAN", "URINE", "USAGE",
+        "USHER", "USING", "USUAL", "USURP", "USURY", "UTTER", "UVULA", "VAGUE", "VALET", "VALID",
+        "VALUE", "VALVE", "VAPID", "VAULT", "VAUNT", "VEGAN", "VENAL", "VENOM", "VENUE", "VERGE",
+        "VERSE", "VERVE", "VEXED", "VICAR", "VIDEO", "VIGIL", "VILLA", "VINYL", "VIOLA", "VIPER",
+        "VIRAL", "VIRUS", "VISIT", "VISOR", "VISTA", "VITAL", "VIVID", "VIXEN", "VOCAL", "VODKA",
+        "VOGUE", "VOICE", "VOTER", "VOUCH", "VOWEL", "VYING", "WACKY", "WAFER", "WAGER", "WAGES",
+        "WAGON", "WAIST", "WAIVE", "WALTZ", "WANLY", "WARTY", "WASTE", "WATCH", "WATER", "WAVED",
+        "WAVER", "WAXEN", "WEARY", "WEAVE", "WEDGE", "WEEDY", "WEEPY", "WEIGH", "WEIRD", "WETLY",
+        "WHACK", "WHALE", "WHARF", "WHEAT", "WHEEL", "WHELK", "WHELP", "WHERE", "WHICH", "WHIFF",
+        "WHILE", "WHINE", "WHINY", "WHIRL", "WHISK", "WHITE", "WHOLE", "WHOOP", "WHORL", "WHOSE",
+        "WIDEN", "WIDOW", "WIDTH", "WIELD", "WIGHT", "WINCE", "WINCH", "WINDY", "WIPER", "WISPY",
+        "WITCH", "WITTY", "WOMAN", "WOODS", "WOODY", "WOOER", "WOOZY", "WORDY", "WORKS", "WORLD",
+        "WORRY", "WORSE", "WORST", "WORTH", "WOULD", "WOUND", "WRACK", "WRATH", "WREAK", "WRECK",
+        "WREST", "WRING", "WRIST", "WRITE", "WRONG", "WROTE", "WRUNG", "WRYLY", "XENON", "XYLEM",
+        "YACHT", "YEARN", "YEAST", "YIELD", "YODEL", "YOUNG", "YOURS", "YOUTH", "YUCKY", "YUMMY",
+        "ZEBRA", "ZESTY", "ZILCH", "ZONAL",
+    ]
+
+    /// Seed for today's Dordle = days since 2022-01-24 (Dordle's launch date).
+    static var dordleEpochDate: Date = {
+        var comps = DateComponents()
+        comps.year = 2022; comps.month = 1; comps.day = 24
+        comps.timeZone = TimeZone.current
+        return Calendar.current.date(from: comps) ?? Date()
     }()
 
-    static var totalPairs: Int { pairs.count }
-
-    static func pair(at index: Int) -> (String, String) {
-        pairs[index % pairs.count]
+    static func dordleSeed(for date: Date = Date()) -> Int {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: dordleEpochDate)
+        let today = cal.startOfDay(for: date)
+        return max(cal.dateComponents([.day], from: start, to: today).day ?? 0, 0)
     }
+
+    /// The exact algorithm Dordle's JS uses: seed the MT, call genrand_int31
+    /// twice to warm up, then pick answers with retry on duplicate. Seed 67 is
+    /// hardcoded to HAPAX/PRANK (same Easter egg as the original).
+    static func dordlePair(seed: Int) -> (String, String) {
+        if seed == 67 { return ("HAPAX", "PRANK") }
+
+        var rnd = MersenneTwister(seed: UInt32(seed & 0xffffffff))
+        _ = rnd.genrandInt31()
+        _ = rnd.genrandInt31()
+        let count = UInt32(dordleAnswers.count)
+        var a: String, b: String
+        repeat {
+            a = dordleAnswers[Int(rnd.genrandInt31() % count)]
+            b = dordleAnswers[Int(rnd.genrandInt31() % count)]
+        } while a == b
+        return (a, b)
+    }
+
+    static var totalPairs: Int { dordleAnswers.count / 2 } // legacy
 
     // MARK: - Single-word access (Wordle mode)
     // Historical NYT/Wardle Wordle answers in chronological order, starting
@@ -1414,6 +1678,7 @@ enum WordList {
         var s = Set(answers.map { $0.uppercased() })
         s.formUnion(extraGuesses.map { $0.uppercased() })
         s.formUnion(wordleHistorical)
+        s.formUnion(dordleAnswers)
         return s
     }()
 

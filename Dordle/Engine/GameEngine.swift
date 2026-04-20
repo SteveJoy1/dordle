@@ -47,11 +47,9 @@ final class GameEngine {
     private(set) var message: String?
     private(set) var shakeRow: Bool = false
 
-    /// Current pair index — persisted across launches.
-    var pairIndex: Int {
-        get { UserDefaults.standard.integer(forKey: "pairIndex") }
-        set { UserDefaults.standard.set(newValue, forKey: "pairIndex") }
-    }
+    /// Today's Dordle seed = days since Dordle's launch date (2022-01-24).
+    /// Not mutable — you get one pair per calendar day, missed days are gone.
+    var pairIndex: Int { WordList.dordleSeed() }
 
     /// Lifetime wins — persisted.
     var totalWins: Int {
@@ -71,7 +69,6 @@ final class GameEngine {
 
     var board1Solved: Bool { guesses.contains(targetWords.0) }
     var board2Solved: Bool { guesses.contains(targetWords.1) }
-    var totalPairs: Int { WordList.totalPairs }
 
     /// Game history — persisted as JSON in UserDefaults.
     var history: [GameRecord] {
@@ -94,22 +91,21 @@ final class GameEngine {
 
     // MARK: - Game lifecycle
 
-    /// Load the pair at the current persisted index, restoring in-progress guesses if any.
+    /// Load today's pair (date-seeded), restoring in-progress guesses if any.
     func loadCurrentPair() {
-        let pair = WordList.pair(at: pairIndex)
+        let pair = WordList.dordlePair(seed: pairIndex)
         targetWords = pair
         gameOver = false
         won = false
         message = nil
 
-        // Restore in-progress state if it matches the current pair
+        // Restore in-progress state if it matches today's pair
         let savedPair = UserDefaults.standard.integer(forKey: "inProgressPairIndex")
         if savedPair == pairIndex,
            let savedGuesses = UserDefaults.standard.stringArray(forKey: "inProgressGuesses") {
             guesses = savedGuesses
             currentGuess = UserDefaults.standard.string(forKey: "inProgressCurrent") ?? ""
 
-            // Re-check if the game was actually over
             let now1 = guesses.contains(targetWords.0)
             let now2 = guesses.contains(targetWords.1)
             if now1 && now2 {
@@ -125,14 +121,12 @@ final class GameEngine {
         }
     }
 
-    /// Advance to the next pair and start a new game.
-    func nextPair() {
-        pairIndex += 1
-        clearInProgressState()
+    /// Reload today's pair (e.g. if the day rolled over while app was open).
+    func refreshForToday() {
         loadCurrentPair()
     }
 
-    /// Restart the current pair from scratch.
+    /// Restart today's pair from scratch.
     func retryCurrent() {
         clearInProgressState()
         loadCurrentPair()

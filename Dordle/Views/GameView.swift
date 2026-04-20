@@ -8,6 +8,7 @@ struct GameView: View {
     @State private var board2Delays: [Double]? = nil
     @State private var animating = false
     @State private var pendingMessage: String? = nil
+    @Environment(\.scenePhase) private var scenePhase
 
     private let flipDuration = 0.28
 
@@ -91,35 +92,12 @@ struct GameView: View {
                         .background(Color(.systemGray6))
                         .clipShape(Capsule())
 
-                        HStack(spacing: 12) {
-                            Button {
-                                withAnimation { engine.retryCurrent() }
-                            } label: {
-                                Label("Retry", systemImage: "arrow.uturn.backward")
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(Color.accentColor)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.accentColor, lineWidth: 2)
-                                    )
-                            }
-
-                            Button {
-                                withAnimation { engine.nextPair() }
-                            } label: {
-                                Label("Next Pair", systemImage: "arrow.right")
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.accentColor)
-                                    )
-                            }
-                        }
+                        // One pair per day — show when next pair unlocks
+                        Text(nextPairMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
                     }
                     .padding(.vertical, 6)
                     .transition(.scale.combined(with: .opacity))
@@ -195,6 +173,12 @@ struct GameView: View {
         .sheet(isPresented: $showHistory) {
             HistoryView(engine: engine)
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            // If the app resumes on a new day, roll over to today's pair.
+            if newPhase == .active {
+                engine.refreshForToday()
+            }
+        }
     }
 
     // MARK: - Header
@@ -207,8 +191,8 @@ struct GameView: View {
 
             Spacer()
 
-            // Pair progress
-            Text("Pair \(engine.pairIndex + 1)/\(engine.totalPairs)")
+            // Daily Dordle number (matches zaratustra.itch.io/dordle)
+            Text("#\(String(format: "%04d", engine.pairIndex))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -249,6 +233,17 @@ struct GameView: View {
         if engine.board1Solved && !engine.board2Solved { return 0.25 }
         if engine.board2Solved && !engine.board1Solved { return 0.75 }
         return 0.5
+    }
+
+    /// Human-readable message about when the next pair unlocks.
+    private var nextPairMessage: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        let cal = Calendar.current
+        guard let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: Date())) else {
+            return "Come back tomorrow for a new pair!"
+        }
+        return "Next pair \(formatter.localizedString(for: tomorrow, relativeTo: Date()))"
     }
 
     /// Number of guesses the keyboard should reflect — excludes the currently
